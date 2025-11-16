@@ -47,11 +47,7 @@ Every "node" in NACC is a **real computer, VM, or container** running the MCP no
 git clone https://github.com/Vasanthadithya-mundrathi/NACC.git
 cd NACC
 
-# Quick setup (recommended on macOS/Linux)
-chmod +x setup_nacc.sh
-./setup_nacc.sh
-
-# Or manual setup
+# Create virtual environment and install
 python3 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e .
@@ -189,11 +185,8 @@ NACC understands natural language through its AI intent parser:
 
 ## 📚 Documentation
 
-- **[NACC Quick Reference](./NACC-Quick-Reference.md)** - API endpoints and tool reference
+- **[NACC Quick Reference](./NACC-Quick-Reference.md)** - API endpoints, tool reference, and daily execution checklist
 - **[VM Setup Guide](./VM-SETUP-GUIDE.md)** - Setting up Kali/Parrot VMs with NACC
-- **[UI Usage Guide](./docs/UI-USAGE-GUIDE.md)** - Complete guide to the conversational UI
-- **[End-to-End Demo](./docs/end-to-end-demo.md)** - Multi-terminal walkthrough with Docker AI
-- **[AI Intent Parser](./docs/AI-INTENT-PARSER-UPGRADE.md)** - How the AI parsing works
 
 ## 🔧 Configuration
 
@@ -339,9 +332,10 @@ nacc/
 │   ├── nacc_orchestrator/ # Orchestration logic + AI
 │   └── nacc_ui/           # Gradio web interface
 ├── configs/               # Configuration files
-├── tests/                 # Test suite
-├── scripts/               # Utility scripts
-└── docs/                  # Documentation
+├── scripts/               # Utility scripts (demo, deployment, testing)
+├── NACC-Quick-Reference.md # Complete API and tool reference
+├── VM-SETUP-GUIDE.md      # VM setup instructions
+└── pyproject.toml         # Project dependencies and metadata
 ```
 
 ### CLI Entry Points
