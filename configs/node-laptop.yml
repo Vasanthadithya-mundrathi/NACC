@@ -1,0 +1,12 @@
+node_id: laptop-dev
+root_dir: ./demo-root/laptop
+description: Primary laptop sandbox
+tags: [laptop, mac]
+allowed_commands:
+  - python
+  - pytest
+  - ls
+  - cat
+  - echo
+sync_targets:
+  archive: ./backups/laptop

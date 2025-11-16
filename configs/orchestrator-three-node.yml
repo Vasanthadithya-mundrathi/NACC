@@ -1,0 +1,26 @@
+orchestrator_id: demo-three-node
+nodes:
+  - node_id: laptop-dev
+    display_name: Laptop Sandbox
+    transport: local
+    root_dir: ./demo-root/laptop
+    tags: [mac, laptop]
+    priority: 5
+  - node_id: linux-vm
+    display_name: Linux VM
+    transport: http
+    base_url: http://127.0.0.1:9876
+    tags: [linux, vm]
+    priority: 10
+    auth_token: ${LINUX_VM_TOKEN:-}
+  - node_id: windows-vm
+    display_name: Windows VM
+    transport: http
+    base_url: http://127.0.0.1:9877
+    tags: [windows, vm]
+    priority: 15
+agent_backend:
+  kind: docker-mistral
+  container_id: ccdfa597c64
+audit:
+  path: ./logs/audit.log

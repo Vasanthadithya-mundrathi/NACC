@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "nacc"
+version = "1.0.0"
+description = "NACC (Network Agentic Connection Call) - MCP-based orchestration with Docker AI routing for real VMs."
+authors = ["Vasanthadithya <vasanthfeb13@gmail.com>"]
+readme = "README.md"
+packages = [
+  { include = "nacc_node", from = "src" },
+  { include = "nacc_orchestrator", from = "src" },
+  { include = "nacc_ui", from = "src" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.15"
+# Core runtime deps (to refine as implementation progresses)
+psutil = "^6.0.0"
+gradio = "^5.0.0"
+requests = "^2.32.0"
+pyjwt = "^2.9.0"
+paramiko = "^3.5.0"
+pydantic = "^2.8.2"
+pyyaml = "^6.0.2"
+fastapi = "^0.115.0"
+uvicorn = "^0.30.0"
+
+# Placeholder for MCP SDK (replace with actual package once chosen)
+# mcp-sdk = "^0.1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+black = "^24.0.0"
+ruff = "^0.6.0"
+
+[tool.poetry.scripts]
+nacc-node = "nacc_node.cli:main"
+nacc-orchestrator = "nacc_orchestrator.cli:main"
+nacc-ui = "nacc_ui.cli:main"
+nacc-chat = "nacc_ui.conversational_ui:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

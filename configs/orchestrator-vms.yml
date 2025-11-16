@@ -1,0 +1,35 @@
+# NACC Orchestrator configuration for Kali VM + Mac (local laptop coming soon)
+nodes:
+  - node_id: kali-vm
+    transport: http
+    base_url: http://192.168.64.2:8765
+    description: Kali Linux pentesting VM in UTM
+    tags: [kali, linux, pentesting, security, vm]
+    priority: 10
+    
+  - node_id: macbook-local
+    transport: local
+    display_name: MacBook Pro (Host)
+    root_dir: /Users/vasanthadithya
+    description: Local macOS host machine
+    tags: [mac, laptop, host, local, macos]
+    priority: 5
+    allowed_commands: [ls, cat, echo, pwd, mkdir, touch, rm, mv, cp, grep, find, python3, node, npm, git, curl, wget, which, whoami, uname, hostname, date, sh, bash, brew, pip, pip3, head, tail, wc, sort, uniq, sed, awk, chmod, chown, ps, kill, df, du, tar, gzip, gunzip, zip, unzip, open, pbcopy, pbpaste]
+
+agent_backend:
+  kind: docker-mistral  # Using Docker Desktop AI models
+  container_id: mistral-nemo  # Model name (not container ID)
+  timeout: 60.0  # Increased timeout for model warmup
+  max_tokens: 200  # Keep responses concise
+  environment: {}
+
+audit:
+  enabled: true
+  log_path: logs/audit-vms.log
+  max_size_mb: 100
+  keep_backups: 5
+
+security:
+  require_auth: false
+  allowed_ips: []
+  rate_limit_per_minute: 100

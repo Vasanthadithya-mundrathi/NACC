@@ -1,0 +1,15 @@
+orchestrator_id: local-demo
+nodes:
+  - node_id: local-dev
+    display_name: Local Dev
+    transport: local
+    root_dir: .
+    tags: [dev, laptop]
+    allowed_commands:
+      - echo
+      - python
+      - ls
+agent_backend:
+  kind: local-heuristic
+audit:
+  path: ./logs/audit-local-demo.log

@@ -1,0 +1,24 @@
+node_id: kali-vm
+root_dir: /home/vasanth/nacc-shared
+description: Kali Linux pentesting node in UTM
+tags: [kali, linux, pentesting, security, network-tools]
+allowed_commands:
+  - python3
+  - ls
+  - cat
+  - echo
+  - grep
+  - find
+  - nmap
+  - netcat
+  - nc
+  - ping
+  - curl
+  - wget
+  - uname
+  - whoami
+  - pwd
+  - hostname
+sync_targets:
+  backup: /home/vasanth/nacc-backup
+  shared: /home/vasanth/nacc-sync

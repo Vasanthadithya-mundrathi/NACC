@@ -1,0 +1,12 @@
+node_id: linux-vm
+root_dir: /home/ubuntu/nacc-share
+description: Ubuntu VM
+tags: [linux, vm]
+allowed_commands:
+  - python3
+  - bash
+  - pytest
+  - tail
+  - echo
+sync_targets:
+  share: /home/ubuntu/nacc-share/snapshots

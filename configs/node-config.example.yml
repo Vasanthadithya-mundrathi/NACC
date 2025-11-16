@@ -1,0 +1,16 @@
+# Example configuration for a single NACC node.
+# Copy this file and adjust the values for your environment.
+
+node_id: dev-node
+root_dir: ./demo-root
+description: Example development node
+tags:
+  - dev
+  - laptop
+allowed_commands:
+  - python
+  - ls
+  - cat
+  - echo
+sync_targets:
+  backup: ./backups/dev-node

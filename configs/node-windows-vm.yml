@@ -1,0 +1,10 @@
+node_id: windows-vm
+root_dir: C:/NACC/share
+description: Windows VM (PowerShell)
+tags: [windows, vm]
+allowed_commands:
+  - powershell
+  - cmd
+  - python
+sync_targets:
+  share: C:/NACC/share/backups

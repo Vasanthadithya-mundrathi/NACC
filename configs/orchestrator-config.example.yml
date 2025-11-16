@@ -1,0 +1,26 @@
+# Example orchestrator configuration
+orchestrator_id: demo-orchestrator
+nodes:
+  - node_id: local-dev
+    display_name: Local Dev Node
+    transport: local
+    root_dir: ./demo-root
+    tags: [dev, laptop]
+    priority: 10
+    allowed_commands: [python, ls, cat, echo]
+    sync_targets:
+      backup: ./backups/local-dev
+  - node_id: remote-http
+    display_name: Remote HTTP Node
+    transport: http
+    base_url: http://127.0.0.1:8765
+    tags: [remote, linux]
+    priority: 20
+agent_backend:
+  kind: docker-mistral
+  container_id: ccdfa597c64
+  command: ["python", "/opt/mistral/agent.py"]
+audit:
+  path: ./logs/audit.log
+  max_entries: 10000
+refresh_interval: 10

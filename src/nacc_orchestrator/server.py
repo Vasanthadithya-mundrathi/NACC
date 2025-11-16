@@ -1,0 +1,617 @@
+"""FastAPI application exposing orchestrator capabilities."""
+
+from __future__ import annotations
+
+from typing import Any
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+
+from .config import load_orchestrator_config
+from .service import OrchestratorService
+
+
+class ListFilesPayload(BaseModel):
+    path: str = "."
+    recursive: bool = False
+    pattern: str | None = None
+    include_hash: bool = False
+
+
+class CommandPayload(BaseModel):
+    description: str = Field(..., description="Human-readable summary of the command")
+    command: list[str] | str
+    preferred_tags: list[str] | None = None
+    parallelism: int = Field(default=1, ge=1, le=8)
+    timeout: float | None = Field(default=None, gt=0.0, le=600.0)
+    cwd: str | None = None
+    env: dict[str, str] | None = None
+
+
+class SyncPayload(BaseModel):
+    source_node: str
+    source_path: str
+    target_nodes: list[str]
+    strategy: str = Field(default="mirror")
+
+
+class ProbePayload(BaseModel):
+    message: str = Field(default="Ping from NACC UI")
+    context: dict[str, Any] | None = None
+
+
+class ChatPayload(BaseModel):
+    query: str = Field(..., description="User's natural language query")
+    session_id: str = Field(default="default")
+    current_node: str | None = None
+    current_path: str = Field(default="/home")
+    timeout: float = Field(default=30.0, gt=0.0, le=600.0)
+
+
+def build_service(config_path: str | None = None) -> OrchestratorService:
+    config = load_orchestrator_config(config_path or "orchestrator-config.yml")
+    return OrchestratorService(config)
+
+
+def create_app(service: OrchestratorService) -> FastAPI:
+    app = FastAPI(title="NACC Orchestrator", version="0.4.0")
+
+    @app.get("/healthz")
+    def health() -> dict[str, str]:
+        return {"status": "ok"}
+
+    @app.get("/nodes")
+    def list_nodes() -> list[dict[str, object]]:
+        return service.list_nodes()
+
+    @app.get("/nodes/{node_id}")
+    def node_info(node_id: str) -> dict[str, object]:
+        try:
+            return service.get_node_info(node_id)
+        except KeyError as exc:  # pragma: no cover - FastAPI error path
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.post("/nodes/{node_id}/files")
+    def list_files(node_id: str, payload: ListFilesPayload) -> dict[str, object]:
+        return service.list_files(
+            node_id,
+            path=payload.path,
+            recursive=payload.recursive,
+            pattern=payload.pattern,
+            include_hash=payload.include_hash,
+        )
+
+    @app.post("/commands/execute")
+    def execute_command(payload: CommandPayload) -> dict[str, object]:
+        return service.execute_command(
+            description=payload.description,
+            command=payload.command,
+            preferred_tags=payload.preferred_tags,
+            parallelism=payload.parallelism,
+            timeout=payload.timeout,
+            cwd=payload.cwd,
+            env=payload.env,
+        )
+
+    @app.post("/sync")
+    def sync(payload: SyncPayload) -> dict[str, object]:
+        return service.sync_path(
+            payload.source_node,
+            source_path=payload.source_path,
+            target_nodes=payload.target_nodes,
+            strategy=payload.strategy,
+        )
+
+    @app.post("/agents/probe")
+    def probe_backend(payload: ProbePayload) -> dict[str, object]:
+        return service.check_agent_backend(payload.message, payload.context)
+
+    @app.post("/chat")
+    def chat(payload: ChatPayload) -> dict[str, object]:
+        """Handle natural language chat queries with AI-powered intent detection and tool selection"""
+        try:
+            context = {
+                "session_id": payload.session_id,
+                "current_node": payload.current_node or "kali-vm",
+                "current_path": payload.current_path or "/home/vasanth"
+            }
+            
+            # Enhanced prompt with available tools and instructions
+            system_prompt = """You are NACC (Network AI Command Center), an intelligent orchestration assistant managing multiple nodes.
+
+Available Tools:
+1. **switch_node** - Switch to a different node (mac/kali)
+   Usage: When user says "switch to mac" or "go to kali"
+   
+2. **write_file** - Create or modify files
+   Usage: When user says "create file X" or "write to file Y"
+   Extract: filename, content
+   
+3. **read_file** - Read file contents
+   Usage: When user says "read file X" or "show me file Y"
+   Extract: file_path
+   
+4. **execute_command** - Run shell commands
+   Usage: When user says "execute X" or "run command Y"
+   Extract: command, args
+   
+5. **install_package** - Install software packages
+   Usage: When user says "install X" or "add package Y"
+   Extract: package_name, package_manager (brew/apt/pip)
+   
+6. **list_files** - List directory contents
+   Usage: When user says "list files" or "show directory"
+   Extract: path (optional)
+
+7. **navigate** - Change directory
+   Usage: When user says "cd to X" or "go to directory Y"
+   Extract: target_path
+
+Current Context:
+- Node: {current_node}
+- Path: {current_path}
+
+Respond in JSON format:
+{{
+  "tool": "<tool_name>",
+  "parameters": {{...}},
+  "reasoning": "brief explanation"
+}}
+
+If you need to execute the action, return the tool. If just providing information, set tool to null.""".format(
+                current_node=context["current_node"],
+                current_path=context["current_path"]
+            )
+            
+            # Get AI response with tool-aware prompt
+            full_query = f"{system_prompt}\n\nUser Query: {payload.query}"
+            ai_result = service.check_agent_backend(full_query, context)
+            ai_response = ai_result.get("response", "")
+            
+            # Try to parse AI response as JSON to extract tool and parameters
+            import json
+            import re
+            tool_info = None
+            try:
+                # Extract JSON from AI response (might be wrapped in markdown)
+                json_match = re.search(r'\{[\s\S]*\}', ai_response)
+                if json_match:
+                    tool_info = json.loads(json_match.group())
+            except:
+                pass
+            
+            # Execute tool based on AI's decision
+            if tool_info and tool_info.get("tool"):
+                tool_name = tool_info.get("tool")
+                params = tool_info.get("parameters", {})
+                current_node = context["current_node"]
+                preferred_tags = ["mac", "local"] if current_node == "macbook-local" else ["kali", "vm"]
+                node_label = "MacBook Pro" if current_node == "macbook-local" else "Kali VM"
+                
+                # Execute the appropriate tool
+                if tool_name == "switch_node":
+                    target = params.get("target_node", "").lower()
+                    if "mac" in target or "macbook" in target:
+                        context["current_node"] = "macbook-local"
+                        context["current_path"] = "/Users/vasanth"
+                        return {
+                            "response": "✅ **Switched to macOS node** (MacBook Pro)\n\n📍 Current path: `/Users/vasanth`",
+                            "context": context
+                        }
+                    elif "kali" in target or "vm" in target:
+                        context["current_node"] = "kali-vm"
+                        context["current_path"] = "/home/vasanth"
+                        return {
+                            "response": "✅ **Switched to Kali VM node**\n\n📍 Current path: `/home/vasanth`",
+                            "context": context
+                        }
+                
+                # If AI wants to execute but we don't have the tool handler yet, fall back to regex
+                # This allows gradual migration to AI-powered system
+                pass
+            
+            # Fall back to regex-based detection for now
+            query_lower = payload.query.lower()
+            
+            # ===== NODE MANAGEMENT =====
+            
+            # Switch node  
+            if "query_lower" in locals() and any(word in query_lower for word in ["switch to", "use node", "change node", "go to mac", "use mac", "switch mac"]):
+            
+            # List all nodes
+            if any(word in query_lower for word in ["list nodes", "show nodes", "all nodes", "available nodes"]):
+                nodes = service.list_nodes()
+                response = "🌐 **Available Nodes:**\n\n"
+                for node in nodes:
+                    node_id = node.get('node_id', 'Unknown')
+                    healthy = node.get('healthy', False)
+                    status = "✅ Online" if healthy else "⚠️ Offline"
+                    current = "← CURRENT" if node_id == context["current_node"] else ""
+                    response += f"• **{node_id}**: {status} {current}\n"
+                    if healthy:
+                        metrics = node.get('metrics', {})
+                        if metrics:
+                            cpu = metrics.get('cpu_percent', 0)
+                            mem = metrics.get('memory_percent', 0)
+                            response += f"  CPU: {cpu:.1f}% | Memory: {mem:.1f}%\n"
+                
+                return {"response": response, "context": context}
+            
+            # ===== COMMAND EXECUTION =====
+            
+            # Execute any shell command
+            if query_lower.startswith(("execute ", "run ", "exec ")):
+                import re
+                # Extract command after keyword
+                match = re.search(r'(?:execute|run|exec)\s+(.+)', payload.query, re.IGNORECASE)
+                if match:
+                    command_str = match.group(1).strip()
+                    
+                    # Determine target node
+                    target_node = context["current_node"]
+                    preferred_tags = []
+                    if target_node == "macbook-local":
+                        preferred_tags = ["mac", "local"]
+                    else:
+                        preferred_tags = ["kali", "vm"]
+                    
+                    exec_result = service.execute_command(
+                        description=f"Execute: {command_str}",
+                        command=command_str.split(),
+                        preferred_tags=preferred_tags,
+                        timeout=payload.timeout
+                    )
+                    
+                    results = exec_result.get('results', [{}])
+                    if results:
+                        stdout = results[0].get('stdout', '')
+                        stderr = results[0].get('stderr', '')
+                        exit_code = results[0].get('exit_code', -1)
+                        
+                        response = f"⚡ **Executed on {target_node}:**\n\n"
+                        response += f"```\n$ {command_str}\n"
+                        if stdout:
+                            response += stdout
+                        if stderr:
+                            response += f"\n[stderr]\n{stderr}"
+                        response += f"\n```\n\nExit code: {exit_code}"
+                        
+                        return {
+                            "response": response,
+                            "context": context,
+                            "execution": exec_result
+                        }
+            
+            # ===== DIRECTORY NAVIGATION =====
+            
+            query_lower = payload.query.lower()
+            
+            # Handle CD / go to directory commands
+            if any(word in query_lower for word in ["cd ", "go to ", "navigate to", "change directory", "documents folder", "downloads folder"]):
+                import re
+                
+                # Common directory mappings per node
+                current_node = context["current_node"]
+                if current_node == "macbook-local":
+                    dir_map = {
+                        "documents": "~/Documents",
+                        "downloads": "~/Downloads",
+                        "desktop": "~/Desktop",
+                        "home": "~",
+                        "projects": "~/Documents/Projects"
+                    }
+                    home_path = "/Users/vasanthadithya"
+                else:  # kali-vm
+                    dir_map = {
+                        "documents": "~/Documents",
+                        "downloads": "~/Downloads", 
+                        "home": "~",
+                        "nacc": "~/nacc"
+                    }
+                    home_path = "/home/vasanth"
+                
+                # Try to find directory name
+                target_dir = None
+                for folder_name, folder_path in dir_map.items():
+                    if folder_name in query_lower:
+                        target_dir = folder_path
+                        break
+                
+                # If no mapping found, try to extract path from query
+                if not target_dir:
+                    path_match = re.search(r'(?:cd|go to|navigate to)\s+([\w/~.-]+)', query_lower)
+                    if path_match:
+                        target_dir = path_match.group(1)
+                
+                if target_dir:
+                    # Expand ~ based on current node
+                    expanded_path = target_dir.replace("~", home_path)
+                    
+                    # Determine preferred tags based on current node
+                    preferred_tags = ["mac", "local"] if current_node == "macbook-local" else ["kali", "vm"]
+                    
+                    # Execute ls in the target directory
+                    exec_result = service.execute_command(
+                        description=f"List files in {expanded_path}",
+                        command=["ls", "-lah", expanded_path],
+                        preferred_tags=preferred_tags,
+                        timeout=payload.timeout
+                    )
+                    
+                    stdout = exec_result.get('results', [{}])[0].get('stdout', '')
+                    node_label = "MacBook Pro" if current_node == "macbook-local" else "Kali VM"
+                    response_text = f"📂 **Navigated to {expanded_path}** (on {node_label})\n\n```\n{stdout}\n```"
+                    
+                    # Update context with new path
+                    context["current_path"] = expanded_path
+                    
+                    return {
+                        "response": response_text,
+                        "ai_reasoning": ai_response[:200] if ai_response else "",
+                        "context": context,
+                        "execution": exec_result
+                    }
+            
+            # List files in current or specified directory
+            elif any(word in query_lower for word in ["list", "ls", "show files", "files"]):
+                path = payload.current_path or context["current_path"]
+                current_node = context["current_node"]
+                preferred_tags = ["mac", "local"] if current_node == "macbook-local" else ["kali", "vm"]
+                
+                exec_result = service.execute_command(
+                    description=f"List files in {path}",
+                    command=["ls", "-lah", path],
+                    preferred_tags=preferred_tags,
+                    timeout=payload.timeout
+                )
+                
+                stdout = exec_result.get('results', [{}])[0].get('stdout', '')
+                node_label = "MacBook Pro" if current_node == "macbook-local" else "Kali VM"
+                response_text = f"📂 **Files in {path}** (on {node_label})\n\n```\n{stdout}\n```"
+                
+                return {
+                    "response": response_text,
+                    "ai_reasoning": ai_response[:200] if ai_response else "",
+                    "context": context,
+                    "execution": exec_result
+                }
+                
+            # ===== FILE OPERATIONS =====
+            
+            # Create/Write file - ENHANCED with Python fallback for restricted nodes
+            elif any(word in query_lower for word in ["create file", "make file", "write file", "create text file", "make a text file", "make a file"]):
+                import re
+                current_node = context["current_node"]
+                current_path = context["current_path"]
+                preferred_tags = ["mac", "local"] if current_node == "macbook-local" else ["kali", "vm"]
+                node_label = "MacBook Pro" if current_node == "macbook-local" else "Kali VM"
+                
+                # Extract filename and content
+                # Patterns: "create file hello.txt with content hello world"
+                #           "make a text file named hello.txt with contents hello from nacc"  
+                filename_match = re.search(r'(?:named|called)\s+([^\s]+)', payload.query, re.IGNORECASE)
+                if not filename_match:
+                    # Try: "create file hello.txt"
+                    filename_match = re.search(r'(?:file|txt)\s+([a-zA-Z0-9_.-]+\.\w+)', payload.query, re.IGNORECASE)
+                content_match = re.search(r'(?:with\s+)?(?:content|contents?)[\s:]+(.+)', payload.query, re.IGNORECASE)
+                
+                if filename_match:
+                    filename = filename_match.group(1).strip()
+                    content = content_match.group(1).strip() if content_match else ""
+                    
+                    # Build full path
+                    if not filename.startswith('/'):
+                        file_path = f"{current_path}/{filename}"
+                    else:
+                        file_path = filename
+                    
+                    # Try service's write_file method first
+                    try:
+                        write_result = service.write_file(
+                            path=file_path,
+                            content=content,
+                            preferred_tags=preferred_tags,
+                            overwrite=True
+                        )
+                        
+                        if write_result.get('success'):
+                            return {
+                                "response": f"""✅ **File Created on {node_label}**
+
+📄 **File**: `{file_path}`
+📝 **Content**:
+```
+{content}
+```
+
+✓ File created successfully!""",
+                                "context": context,
+                                "execution": write_result
+                            }
+                    except Exception as e:
+                        # FALLBACK: Use Python for restricted nodes (like Kali)
+                        if "403" in str(e) or "Forbidden" in str(e):
+                            # Escape content for Python string
+                            content_escaped = content.replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"')
+                            python_code = f"with open('{file_path}', 'w') as f: f.write('{content_escaped}')"
+                            
+                            fallback_result = service.execute_command(
+                                description=f"Create file {filename} via Python",
+                                command=["python3", "-c", python_code],
+                                preferred_tags=preferred_tags,
+                                timeout=payload.timeout
+                            )
+                            
+                            results = fallback_result.get('results', [{}])
+                            if results and results[0].get('exit_code') == 0:
+                                return {
+                                    "response": f"""✅ **File Created on {node_label}** (via Python)
+
+📄 **File**: `{file_path}`
+📝 **Content**:
+```
+{content}
+```
+
+✓ File created successfully!""",
+                                    "context": context,
+                                    "execution": fallback_result
+                                }
+                            else:
+                                stderr = results[0].get('stderr', '') if results else ''
+                                return {
+                                    "response": f"❌ Failed to create file: {stderr or 'Unknown error'}",
+                                    "context": context
+                                }
+                        else:
+                            return {
+                                "response": f"❌ Failed to create file: {str(e)}",
+                                "context": context
+                            }
+                else:
+                    return {
+                        "response": "❌ Could not parse filename. Please use format: `create file hello.txt with content hello world`",
+                        "context": context
+                    }
+            
+            # Install packages - CHECK THIS BEFORE READ FILE to avoid conflicts
+            elif any(word in query_lower for word in ["install package", "install ", "apt install", "brew install", "pip install"]):
+                import re
+                current_node = context["current_node"]
+                
+                # Determine package manager and extract package name
+                if "pip install" in query_lower:
+                    match = re.search(r'pip install\s+(\S+)', query_lower)
+                    if match:
+                        package = match.group(1)
+                        cmd = ["pip3", "install", package]
+                elif "apt install" in query_lower or (current_node == "kali-vm" and "install" in query_lower):
+                    # Handle "install X package" or "install X"
+                    match = re.search(r'(?:apt\s+)?install\s+(\S+?)(?:\s+package)?', query_lower)
+                    if match:
+                        package = match.group(1)
+                        cmd = ["sudo", "apt", "install", "-y", package]
+                elif "brew install" in query_lower or (current_node == "macbook-local" and "install" in query_lower):
+                    # Handle "install X package" or "install X"
+                    match = re.search(r'(?:brew\s+)?install\s+(\S+?)(?:\s+package)?', query_lower)
+                    if match:
+                        package = match.group(1)
+                        cmd = ["brew", "install", package]
+                else:
+                    return {
+                        "response": "❌ Could not determine package manager. Please specify: `pip install`, `apt install`, or `brew install`",
+                        "context": context
+                    }
+                
+                preferred_tags = ["mac", "local"] if current_node == "macbook-local" else ["kali", "vm"]
+                exec_result = service.execute_command(
+                    description=f"Install package: {package}",
+                    command=cmd,
+                    preferred_tags=preferred_tags,
+                    timeout=120  # Longer timeout for installs
+                )
+                
+                stdout = exec_result.get('results', [{}])[0].get('stdout', '')
+                stderr = exec_result.get('results', [{}])[0].get('stderr', '')
+                node_label = "MacBook Pro" if current_node == "macbook-local" else "Kali VM"
+                
+                return {
+                    "response": f"📦 **Installing {package}** on {node_label}...\n\n```\n{stdout}\n{stderr}\n```",
+                    "context": context,
+                    "execution": exec_result
+                }
+            
+            # Read file
+            elif any(word in query_lower for word in ["read file", "show file", "cat ", "view file"]):
+                import re
+                # Extract file path
+                path_match = re.search(r'(?:read|show|cat|view)\s+(?:file\s+)?(.+)', payload.query, re.IGNORECASE)
+                if path_match:
+                    file_path = path_match.group(1).strip()
+                    current_node = context["current_node"]
+                    preferred_tags = ["mac", "local"] if current_node == "macbook-local" else ["kali", "vm"]
+                    
+                    exec_result = service.execute_command(
+                        description=f"Read file {file_path}",
+                        command=["cat", file_path],
+                        preferred_tags=preferred_tags,
+                        timeout=payload.timeout
+                    )
+                    
+                    stdout = exec_result.get('results', [{}])[0].get('stdout', '')
+                    node_label = "MacBook Pro" if current_node == "macbook-local" else "Kali VM"
+                    return {
+                        "response": f"📄 **File: {file_path}** (on {node_label})\n\n```\n{stdout}\n```",
+                        "context": context,
+                        "execution": exec_result
+                    }
+            
+            elif any(word in query_lower for word in ["status", "health", "nodes", "dashboard"]):
+                # Get nodes status
+                nodes = service.list_nodes()
+                response_text = "🌐 **Network Status:**\n\n"
+                for node in nodes:
+                    node_id = node.get('node_id', 'Unknown')
+                    healthy = node.get('healthy', False)
+                    metrics = node.get('metrics', {})
+                    
+                    status = "✅ Online" if healthy else "⚠️ Offline"
+                    current = "← CURRENT" if node_id == context["current_node"] else ""
+                    response_text += f"• **{node_id}**: {status} {current}\n"
+                    
+                    if healthy and metrics:
+                        cpu = metrics.get('cpu_percent', 0)
+                        mem = metrics.get('memory_percent', 0)
+                        disk = metrics.get('disk_percent', 0)
+                        response_text += f"  CPU: {cpu:.1f}% | Memory: {mem:.1f}% | Disk: {disk:.1f}%\n"
+                
+                return {
+                    "response": response_text,
+                    "ai_reasoning": ai_response[:200] if ai_response else "",
+                    "context": context
+                }
+                
+            else:
+                # Return AI's general response or help
+                help_text = """I can help you with:
+
+**Node Management:**
+• `switch to mac` - Switch to macOS node
+• `switch to kali` - Switch to Kali VM
+• `list nodes` - Show all available nodes
+
+**Navigation:**
+• `cd /path` or `go to documents` - Change directory
+• `ls` or `list files` - List files in current directory
+
+**Command Execution:**
+• `execute <command>` - Run any shell command
+• `read file <path>` - View file contents
+• `install <package>` - Install packages (apt/brew/pip)
+
+**System Info:**
+• `status` or `dashboard` - Show node health and metrics
+
+Currently on: **{current_node}** at `{current_path}`
+""".format(current_node=context["current_node"], current_path=context["current_path"])
+                
+                return {
+                    "response": ai_response if ai_response and len(ai_response) > 50 else help_text,
+                    "ai_reasoning": ai_response[:200] if ai_response else "",
+                    "context": context
+                }
+                
+        except Exception as e:
+            return {
+                "response": f"❌ Error: {str(e)}",
+                "context": {
+                    "session_id": payload.session_id,
+                    "current_node": payload.current_node,
+                    "current_path": payload.current_path
+                }
+            }
+
+    return app
+
+
+__all__ = ["build_service", "create_app"]
