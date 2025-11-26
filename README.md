@@ -1,4 +1,15 @@
 ---
+title: NACC - Network Agentic Command Control
+emoji: 🚀
+colorFrom: blue
+colorTo: purple
+sdk: gradio
+sdk_version: 5.5.0
+app_file: app.py
+pinned: false
+license: mit
+short_description: Autonomous AI Agent Orchestrator for Multi-Node Control
+
 tags:
 - mcp-in-action-track-enterprise
 - mcp-in-action-track-consumer
@@ -162,7 +173,38 @@ sequenceDiagram
 *   **Network**: All machines (Orchestrator and Nodes) must be on the **same local network** (LAN).
 *   **Git**: For cloning the repository.
 
-### Quick Start (For Judges)
+### 🎮 Demo Guide
+
+NACC can be demonstrated in two powerful ways. Choose the one that fits your environment:
+
+### ☁️ Option 1: Cloud Demo (Hugging Face Spaces)
+**Perfect for:** Judges, quick testing, zero setup.
+
+1.  **Open the Space**: Go to the NACC Space.
+2.  **Auto-Connect**: You will see **`✅ Online: Local Node (Demo)`** immediately. This is a real node running *inside* the Space container.
+3.  **Try Commands**:
+    *   "List files in current directory"
+    *   "Create a file named hello.txt with content 'Hello from HF Space!'"
+4.  **Multi-Node Magic** (Optional):
+    *   If you deployed the **VM Node Space**, connect to it:
+    *   *"Connect to node at https://mcp-1st-birthday-virtual-machine.hf.space and name it Remote-VM"*
+    *   Now you can switch between nodes: *"Switch to Remote-VM and list files"*
+
+### 🏠 Option 2: Real-World Demo (Local Network)
+**Perfect for:** Full power, controlling physical devices, home labs.
+
+1.  **Run Orchestrator**: `python -m src.nacc_orchestrator.cli serve` on your main computer.
+2.  **Run Nodes**: `python -m src.nacc_node.cli serve` on your other laptops, Raspberry Pis, or VMs.
+3.  **Connect**:
+    *   *"Connect to node at 192.168.1.15 and name it MacBook-Pro"*
+    *   *"Connect to node at 192.168.1.20 and name it Kali-Linux"*
+4.  **Orchestrate**:
+    *   *"Check CPU usage on all nodes"*
+    *   *"Sync the 'project' folder from MacBook-Pro to Kali-Linux"*
+
+---
+
+## 🚀 Quick Start (Local) (For Judges)
 
 ```bash
 # Clone the repository
