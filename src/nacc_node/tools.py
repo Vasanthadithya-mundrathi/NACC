@@ -360,8 +360,12 @@ class NodeServer:
                 self.wfile.write(data)
 
             def do_GET(self) -> None:  # noqa: N802 - required name
-                if self.path == "/healthz":
-                    self._send_json(HTTPStatus.OK, {"status": "ok"})
+                if self.path == "/healthz" or self.path == "/":
+                    self._send_json(HTTPStatus.OK, {
+                        "status": "ok",
+                        "service": "nacc-node",
+                        "node_id": config.node_id
+                    })
                     return
                 if self.path == "/node":
                     payload = get_node_info_tool(config, {})
