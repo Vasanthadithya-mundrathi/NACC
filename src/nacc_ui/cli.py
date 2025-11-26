@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 
-from .app import build_interface
+# Use Professional UI v2 by default
+from .professional_ui_v2 import create_professional_ui_v2
 from .config import load_ui_config
 
 
@@ -22,7 +24,13 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     config = load_ui_config(args.config)
-    interface = build_interface(config)
+    
+    # Set orchestrator URL for professional UI
+    os.environ["NACC_ORCHESTRATOR_URL"] = str(config.orchestrator_url)
+    
+    # Use Professional UI v2
+    interface = create_professional_ui_v2()
+    
     if args.dry_run:
         print(json.dumps({"orchestrator_url": str(config.orchestrator_url), "host": config.host, "port": config.port}, indent=2))
         return
@@ -31,7 +39,7 @@ def main(argv: list[str] | None = None) -> None:
         server_name=config.host,
         server_port=config.port,
         share=args.share,
-        show_api=False,
+        allowed_paths=["."]
     )
 
 

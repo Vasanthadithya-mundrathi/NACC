@@ -1,0 +1,36 @@
+# NACC Orchestrator configuration for Testing Blaxel Gemini Backend
+nodes:
+  - node_id: kali-vm
+    transport: http
+    base_url: http://192.168.64.2:8765
+    description: Kali Linux pentesting VM in UTM
+    tags: [kali, linux, pentesting, security, vm]
+    priority: 10
+    
+  - node_id: macbook-local
+    transport: local
+    display_name: MacBook Pro (Host)
+    root_dir: /Users/vasanthadithya
+    description: Local macOS host machine
+    tags: [mac, laptop, host, local, macos]
+    priority: 5
+    allowed_commands: [ls, cat, echo, pwd, mkdir, touch, rm, mv, cp, grep, find, python3, node, npm, git, curl, wget, which, whoami, uname, hostname, date, sh, bash, brew, pip, pip3, head, tail, wc, sort, uniq, sed, awk, chmod, chown, ps, kill, df, du, tar, gzip, gunzip, zip, unzip, open, pbcopy, pbpaste]
+
+agent_backend:
+  kind: blaxel-gemini  # Testing Blaxel with Gemini-2.0-flash
+  container_id: bl_aaab2v2ljj61gumirbwukm9deyva37sq  # Blaxel API key
+  timeout: 30.0
+  environment:
+    workspace: vasanthfeb13
+    model: gemini-2.0-flash
+
+audit:
+  enabled: true
+  log_path: logs/audit-blaxel-gemini.log
+  max_size_mb: 100
+  keep_backups: 5
+
+security:
+  require_auth: false
+  allowed_ips: []
+  rate_limit_per_minute: 100

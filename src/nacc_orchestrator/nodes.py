@@ -224,6 +224,18 @@ class NodeRegistry:
         }
         self._lock = threading.Lock()
 
+    def add_node(self, definition: NodeDefinition) -> None:
+        """Dynamically add a new node to the registry."""
+        with self._lock:
+            self._definitions[definition.node_id] = definition
+            self._clients[definition.node_id] = self._build_client(definition)
+            self._status[definition.node_id] = NodeStatus(
+                node_id=definition.node_id,
+                display_name=definition.display_name,
+                tags=definition.tags
+            )
+
+
     def _build_client(self, definition: NodeDefinition) -> NodeClient:
         if definition.transport == "http":
             return HTTPNodeClient(definition)

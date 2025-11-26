@@ -1,0 +1,78 @@
+agent_backend:
+  container_id: bl_aaab2v2ljj61gumirbwukm9deyva37sq
+  environment:
+    model: sandbox-openai
+    workspace: vasanthfeb13
+  kind: blaxel-openai
+  timeout: 30.0
+audit:
+  enabled: true
+  keep_backups: 5
+  log_path: logs/audit-blaxel-openai.log
+  max_size_mb: 100
+nodes:
+- allowed_commands:
+  - ls
+  - cat
+  - echo
+  - pwd
+  - mkdir
+  - touch
+  - rm
+  - mv
+  - cp
+  - grep
+  - find
+  - python3
+  - node
+  - npm
+  - git
+  - curl
+  - wget
+  - which
+  - whoami
+  - uname
+  - hostname
+  - date
+  - sh
+  - bash
+  - brew
+  - pip
+  - pip3
+  - head
+  - tail
+  - wc
+  - sort
+  - uniq
+  - sed
+  - awk
+  - chmod
+  - chown
+  - ps
+  - kill
+  - df
+  - du
+  - tar
+  - gzip
+  - gunzip
+  - zip
+  - unzip
+  - open
+  - pbcopy
+  - pbpaste
+  description: Local macOS host machine
+  display_name: MacBook Pro (Host)
+  node_id: macbook-local
+  priority: 5
+  root_dir: /Users/vasanthadithya
+  tags:
+  - mac
+  - laptop
+  - host
+  - local
+  - macos
+  transport: local
+security:
+  allowed_ips: []
+  rate_limit_per_minute: 100
+  require_auth: false

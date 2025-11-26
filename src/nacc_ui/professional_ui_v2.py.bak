@@ -106,7 +106,7 @@ class ModernNACCUI(NACCConversationUI):
             bot_response = f"❌ Connection error: {str(e)}"
         
         # Add to history
-        history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": bot_response}]
+        history = history + [[message, bot_response]]
         
         # Update views dynamically based on current session state
         dashboard = self.get_dashboard_view(session)
@@ -159,8 +159,8 @@ class ModernNACCUI(NACCConversationUI):
     
     def list_files_view(self, path: str = None, node: str = "macbook-local") -> str:
         """List files in current directory on specified node"""
-        # path and node should always be provided from session context
-        # No fallback to avoid breaking context switching
+        if path is None:
+            path = get_nacc_workspace()
         
         try:
             # Determine preferred tags based on node
@@ -394,8 +394,7 @@ def create_professional_ui_v2():
         background: #161b22 !important;
         border-right: 1px solid #30363d !important;
         padding: 1rem !important;
-        min-height: 100vh !important;
-        height: auto !important;
+        height: 100vh !important;
     }
     
     /* Chat Area */
@@ -418,9 +417,7 @@ def create_professional_ui_v2():
     #main-chatbot {
         background: transparent !important;
         border: none !important;
-        height: calc(100vh - 200px) !important;
-        min-height: 500px !important;
-        overflow-y: auto !important;
+        height: 70vh !important;
     }
     .message-wrap {
         background: #161b22 !important;
@@ -480,10 +477,11 @@ def create_professional_ui_v2():
     """
     
     # Build the Gradio Interface
-    with gr.Blocks() as demo:
-        demo.theme = gr.themes.Soft(primary_hue="blue", secondary_hue="slate")
-        demo.css = custom_css
-        demo.title = "NACC Enterprise AI"
+    with gr.Blocks(
+        theme=gr.themes.Soft(primary_hue="blue", secondary_hue="slate"),
+        css=custom_css,
+        title="NACC Enterprise AI - Professional Network Orchestration"
+    ) as demo:
         
         # Session state
         session_id = gr.State()
@@ -507,16 +505,20 @@ def create_professional_ui_v2():
                         value=nacc.list_files_view(),
                         lines=15,
                         interactive=False,
+                        show_copy_button=True,
                         elem_classes="file-tree",
                         container=False
                     )
                 
                 gr.Markdown("### 📊 System")
                 # Mini Dashboard
-                # Mini Dashboard - Converted to Markdown for cleaner look
-                dashboard_output = gr.Markdown(
+                dashboard_output = gr.Textbox(
+                    label="",
                     value=nacc.get_dashboard_view(),
-                    elem_classes="mini-dashboard"
+                    lines=10,
+                    interactive=False,
+                    elem_classes="mini-dashboard",
+                    container=False
                 )
                 refresh_dash = gr.Button("Refresh Status", size="sm")
 
@@ -543,17 +545,18 @@ def create_professional_ui_v2():
                                 visible=False,
                                 container=False
                             )
-                            with gr.Row():
-                                switch_button = gr.Button("Apply Switch", size="sm", variant="primary")
-                                refresh_backends_btn = gr.Button("🔄 Refresh List", size="sm")
+                            switch_button = gr.Button("Apply", size="sm")
                             backend_status = gr.Markdown("Ready", elem_classes="status-text")
 
-                # Chat Interface (No Tabs)
+                # Chat Interface
                 chatbot = gr.Chatbot(
                     value=[],
-                    height=600,
+                    height=650,
                     show_label=False,
                     avatar_images=(None, "🤖"),
+                    bubble_full_width=False,
+                    show_copy_button=True,
+                    type="tuples",
                     elem_id="main-chatbot"
                 )
                 
@@ -572,273 +575,408 @@ def create_professional_ui_v2():
                 # Footer / Disclaimer
                 gr.Markdown(
                     """
-                    <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #64748b; margin-top: 5px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #64748b; margin-top: 5px;">
                         <span>⚠️ Blaxel Sandbox: 30-70s processing</span>
                         <span>Context: macbook-local</span>
                     </div>
                     """
                 )
-                
-                # Help & Documentation (Updated)
-
-
 
         # Hidden components for logic
-
-        # Bottom Section: Help & About (Full Width)
-        with gr.Row(elem_id="bottom-section"):
-            with gr.Column(scale=1):
-                with gr.Accordion("📚 Help & Documentation", open=False):
-                    gr.Markdown("""
-                    ### 🎯 Quick Start Guide
-                    
-                    **1. File Operations**
-                    *   `list files` - See what's in your current directory.
-                    *   `read [filename]` - View the contents of a file.
-                    *   `write [content] to [filename]` - Create or update a file.
-                    
-                    **2. Node Management** ⭐ *NEW FEATURES*
-                    *   `list nodes` - See all connected machines.
-                    *   `switch to [node-id]` - Switch by exact node ID (e.g., `switch to kali-vm`, `switch to macbook-local`).
-                    *   `switch to [alias]` - Use aliases (e.g., `switch to kali`, `switch to mac`, `switch to laptop`).
-                    *   **Connect New Nodes**: `connect to [6-digit-code] at [ip-address] and name it as [name]`
-                      - Example: `connect to 473293 at 192.168.1.50 and name it as my-laptop`
-                      - First run `nacc-node init` on the remote node to get the pairing code!
-                    
-                    **3. System Monitoring**
-                    *   `show system metrics` - View CPU, RAM, and Disk usage.
-                    *   `check disk space` - Quick storage check.
-                    
-                    **4. AI Backends (Top Right Settings)**
-                    *   **Blaxel Sandbox**: ✅ Default. Free, reliable, ~30-70s response time.
-                    *   **Docker Mistral**: Runs locally on your machine. Fast & Free.
-                    *   **OpenAI/Gemini**: Requires your own API key for max speed.
-                    
-                    ### 💡 Tips
-                    - Context is preserved! After switching nodes, all file operations use that node's path.
-                    - You can switch nodes by ID, display name, or alias - whatever you remember!
-                    """)
-
-                with gr.Accordion("👨‍💻 About Creator & NACC", open=False):
-                    gr.Markdown("""
-                    # 👨‍💻 About the Creator
-                    
-                    ## Vasanthadithya Mundrathi (SHADOW)
-                    **Cybersecurity Enthusiast | Ethical Hacker | AI Developer**
-                    
-                    🎓 **Education**: 3rd Year B.E. Computer Science & Engineering at **CBIT** (Chaitanya Bharathi Institute of Technology).
-                    
-                    I speak fluent Python 🐍 and binary `01100001`. My passion lies in **Advanced Penetration Testing**, **AI/ML for Cybersecurity**, and building autonomous systems.
-                    
-                    ---
-                    
-                    ### 🛠️ Tech Arsenal
-                    | Category | Skills |
-                    | :--- | :--- |
-                    | **💻 Languages** | Python, JavaScript, TypeScript, Go, C++, Kotlin, Bash, HTML/CSS, R |
-                    | **🔧 Frameworks** | Node.js, React, Docker, Git, Linux, VS Code, Vim |
-                    | **🔐 Security** | Kali Linux, Burp Suite, Wireshark, Metasploit, Nmap |
-                    | **🗄️ Cloud/DB** | MongoDB, MySQL, Postgres, Firebase, AWS, GCP |
-                    
-                    ### 🏆 Featured Projects & Achievements
-                    *   **Z-Umbra**: 🏆 *Avalanche Team 1 Winner* - Privacy connection protocol on Avalanche Fuji.
-                    *   **SCS**: 🤖 AI-powered supply chain disruption detection.
-                    *   **H5X**: 🔐 LLVM-based code obfuscation with AI & blockchain.
-                    *   **GuardX**: 🔒 Web application adaptive firewall.
-                    *   **cognitive-resonance-analysis**: 🧠 AI Truth Detection (OpenAI Hackathon 2025).
-                    
-                    [🔗 LinkedIn](https://www.linkedin.com/in/vasanthadithya-mundrathi-84a54031a/) | [🐙 GitHub](https://github.com/Vasanthadithya-mundrathi)
-                    
-                    ---
-                    
-                    ### 🌟 Open to Opportunities!
-                    > **If you like my project, I would be grateful for the opportunity to intern with your team.**
-                    > I have a diverse skill set ranging from **Cybersecurity** to **Full Stack Web Dev** and **AI Agents**. If you need a developer who can build secure, complex, and autonomous systems from scratch, let's connect!
-                    
-                    ---
-                    
-                    # 🚀 About NACC (Network Agentic Connection Call)
-                    
-                    ### 💡 The Problem
-                    Managing distributed infrastructure (Cloud, VMs, Local) is tedious. SSH is manual, repetitive, and doesn't "understand" your goals.
-                    
-                    ### ⚡ The Solution: NACC
-                    NACC is a **Multi-Node AI Orchestrator** built on the **Model Context Protocol (MCP)**. It turns your entire network into a single, intelligent entity.
-                    
-                    ### 🏗️ Project Architecture
-                    
-                    **1. High-Level System Overview**
-                    
-                    The NACC system follows a **hub-and-spoke architecture**:
-                    
-                    - **👤 User** interacts with the **🖥️ NACC UI** (this Gradio interface)
-                    - **UI** sends natural language requests to the **🧠 Orchestrator** via REST API
-                    - **Orchestrator** (the brain) routes commands to multiple **Nodes**:
-                      - 💻 **MacBook Node** (local development machine)
-                      - 🛡️ **Kali VM Node** (security testing environment)
-                      - ☁️ **Cloud Node** (remote servers)
-                    - Each node executes tasks and returns results back through the Orchestrator
-                    
-                    **2. MCP Communication Layer**
-                    
-                    The **Model Context Protocol (MCP)** handles all inter-node communication:
-                    
-                    - **AI Intent Parser**: Converts natural language ("check disk space") into structured commands
-                    - **Router**: Selects the appropriate node(s) based on context and capabilities
-                    - **JSON-RPC Protocol**: Standardized message format for all node communication
-                    - **Tool Registry**: Catalogs available tools on each node (file ops, shell commands, etc.)
-                    - **Executor**: Runs the actual commands on the target node's operating system
-                    
-                    **3. Agent Internal Structure**
-                    
-                    Each NACC Node (agent) has these components:
-                    
-                    - **MCP Client**: Receives JSON-RPC requests from the Orchestrator
-                    - **Tool Registry**: Maintains a list of capabilities (read_file, execute_command, etc.)
-                    - **Tool Type Selector**: Routes the request to the appropriate handler:
-                      - **Filesystem Tools**: For file operations (read, write, list)
-                      - **Shell Tools**: For command execution (bash, powershell)
-                      - **Context Manager**: Maintains session state and current working directory
-                    
-                    **4. Multi-Node Workflow Example**
-                    
-                    Here's how a penetration testing task would flow:
-                    
-                    1. **Orchestrator → Node A (Scanner)**: "Scan the network for open ports"
-                    2. **Node A → Orchestrator**: "Found target at 192.168.1.100 with port 22 open"
-                    3. **Orchestrator** (AI decides next step): "Launch SSH brute-force on that target"
-                    4. **Orchestrator → Node B (Attacker)**: "Run hydra against 192.168.1.100:22"
-                    5. **Node B → Orchestrator**: "Success! Credentials: admin/password123"
-                    
-                    All of this happens through **natural language** - you just tell NACC what you want, and it figures out which nodes to use and in what order.
-                    
-                    ### 🧠 Built From Scratch (Zero Pre-built MCPs)
-                    **I did not use any pre-existing MCP SDKs or tools.** I implemented the entire protocol stack manually to ensure maximum control and security.
-                    
-                    1.  **Custom MCP Server Implementation**:
-                        *   Wrote a Python-based JSON-RPC handler from scratch.
-                        *   Implemented the `CallToolRequest` and `ListToolsRequest` schemas manually.
-                        *   Created a secure handshake mechanism for node registration.
-                    
-                    2.  **Agentic Tooling**:
-                        *   `read_file` / `write_file`: Custom filesystem abstraction that works across OSs.
-                        *   `execute_command`: Secure shell execution with timeout and output capturing.
-                        *   `switch_node`: Context-switching logic that preserves agent state across machines.
-                    
-                    3.  **Why Custom?**
-                        *   **Security**: No black-box dependencies. I know exactly what code is running on my root-level servers.
-                        *   **Performance**: Optimized for low-latency local network communication.
-                        *   **Flexibility**: I can add custom tool definitions (like `nmap_scan` for Kali) without waiting for upstream library updates.
-                    
-                    ### 🆚 Why NACC?
-                    | Feature | SSH | NACC |
-                    | :--- | :--- | :--- |
-                    | **Control** | Manual | **Autonomous** |
-                    | **Scope** | Single Session | **Multi-Node Context** |
-                    | **Interface** | CLI | **Natural Language** |
-                    
-                    ### 🔄 How it Works (Step-by-Step)
-                    
-                    <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    
-                    ```mermaid
-                    sequenceDiagram
-                        participant User as 👤 User
-                        participant UI as 🖥️ NACC UI
-                        participant Orch as 🧠 Orchestrator
-                        participant Node as 💻 Node (Kali/Mac)
-                        
-                        User->>UI: "Check disk space on Kali"
-                        UI->>Orch: POST /chat (Natural Language)
-                        Note over Orch: AI parses intent & selects tool
-                        Orch->>Node: JSON-RPC: execute_command("df -h")
-                        Node->>Node: Runs command locally
-                        Node-->>Orch: Returns Output
-                        Orch-->>UI: Formats Response
-                        UI-->>User: Displays Result
-                    ```
-                    
-                    </div>
-                    
-                    ### ✨ Latest Features (v2.0)
-                    
-                    **🔹 Enhanced Node Switching**
-                    - Switch by exact node ID: `switch to kali-vm`
-                    - Switch by alias: `switch to kali`, `switch to mac`, `switch to laptop`
-                    - Automatic home path detection for each node
-                    - Context persistence: your current directory is maintained across commands!
-                    
-                    **🔹 Chat-Based Node Pairing**
-                    - No more CLI commands! Pair nodes directly from chat:
-                      1. On remote node: `nacc-node init` → Get 6-digit code
-                      2. In chat: `connect to 473293 at 192.168.1.50 and name it as my-server`
-                      3. Done! Switch immediately: `switch to my-server`
-                    
-                    **🔹 Streamlined Setup**
-                    - Blaxel backend is now the default (no more Modal authentication!)
-                    - One command startup: `./start_nacc.sh`
-                    - Judge-friendly documentation: See `JUDGES_SETUP.md`
-                    
-                    ### 📋 Requirements
-                    To run NACC effectively, you need:
-                    1.  **Network Visibility**: All computers (Nodes) must be on the **same local network** (LAN) or connected via VPN (Tailscale/ZeroTier).
-                    2.  **Python 3.10+**: Required on all machines.
-                    3.  **Dependencies**: `requests`, `fastapi`, `uvicorn` (installed via `requirements.txt`).
-                    4.  **Orchestrator**: One central machine (can be your laptop) to run the brain.
-                    
-                    ### ⚙️ Setup Guide
-                    
-                    **Step 1: Start the Orchestrator (The Brain)**
-                    On your main computer:
-                    ```bash
-                    # Clone & Install
-                    git clone https://github.com/Vasanthadithya-mundrathi/NACC.git
-                    cd NACC
-                    ./install.sh
-                    
-                    # Start Orchestrator
-                    nacc-orchestrator start --host 0.0.0.0
-                    ```
-                    
-                    **Step 2: Connect a Node (The Worker)**
-                    On a different computer (e.g., Kali Linux VM):
-                    ```bash
-                    # Clone & Install (Same as above)
-                    ...
-                    
-                    # Connect to Orchestrator
-                    nacc-node init --orchestrator-url http://<ORCHESTRATOR_IP>:8888
-                    ```
-                    
-                    **Step 3: Control it!**
-                    Open this UI and type: *"Run nmap scan on the Kali node"* 🚀
-                    
-                    ### 🧠 Simple Explanation
-                    1.  **You talk to NACC** like a colleague: *"Check the server logs."*
-                    2.  **NACC understands** which computer you mean (Context Awareness).
-                    3.  **It sends a secure message** (JSON-RPC) to that specific computer.
-                    4.  **The computer executes** the task and sends back the proof.
-                    5.  **You get the result** instantly in the chat.
-                    
-                    ---
-                    
-                    ### 🛠️ Try It Out
-                    ```bash
-                    git clone https://github.com/Vasanthadithya-mundrathi/NACC.git
-                    cd NACC
-                    ./install.sh
-                    # Then run: nacc-node init
-                    ```
-                    """)
-
-
-
-    
-
-        # Hidden components for state
         backend_info = gr.Markdown("", visible=False)
         current_path = gr.State(value=get_nacc_workspace())
         cd_btn = gr.Button("Open", visible=False)
+        refresh_backends_btn = gr.Button("Refresh", visible=False)
+        
+        # Removed unused tabs/components from previous layout to clean up
+        # (ex1, ex2, etc. logic will need to be updated or removed if buttons are gone)
+        # Keeping buttons hidden if needed for existing callbacks, or we remove callbacks.
+        # Let's keep the callbacks but remove the buttons from UI to avoid errors if referenced.
+        # Actually, better to define them as hidden if I don't want to rewrite all callbacks right now.
+        ex1 = gr.Button(visible=False)
+        ex2 = gr.Button(visible=False)
+        ex3 = gr.Button(visible=False)
+        ex4 = gr.Button(visible=False)
+                    
+                    # Tab 3: Help & Documentation
+                    with gr.Tab("📚 Help & Examples"):
+                        help_output = gr.Textbox(
+                            label="NACC Complete Guide",
+                            value=f"""📚 NACC - Network Agentic Connection Call
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 WHAT IS NACC?
+
+NACC is an AI-powered multi-node orchestration platform that lets you:
+✅ Manage multiple servers with natural language
+✅ Execute commands across your infrastructure
+✅ Switch between 8 different AI backends
+✅ Browse files and directories anywhere
+✅ Monitor system health in real-time
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 YOUR NACC WORKSPACE
+
+Location: {get_nacc_workspace()}
+
+This is where NACC stores files you create. All AI operations happen here
+unless you specify a different path.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🛠️ AVAILABLE TOOLS & MCPs
+
+📝 FILE OPERATIONS
+   write_file    - Create/update files
+   read_file     - Read file contents
+   list_files    - Browse directories
+   delete_file   - Remove files
+   
+   Examples:
+   • "create a file called test.txt with hello world"
+   • "read the contents of test.txt"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🤖 BACKEND DETAILS
+
+✅ **RECOMMENDED:**
+• Blaxel Sandbox (OpenAI) - FREE, Reliable, Fast
+
+OTHER OPTIONS:
+• Modal A100         - IBM Granite 3B (FREE)
+• Docker Mistral     - Local 12B model (FREE)
+• Blaxel Gemini      - 10 FREE requests
+• Local Heuristic    - Rule-based fallback (FREE)
+
+PAID (Requires Key):
+• OpenAI GPT-4, Google Gemini, Cerebras Llama
+
+
+🖥️ COMMAND EXECUTION
+   execute_command - Run shell commands
+   
+   Examples:
+   • "check disk space"
+   • "show running processes"
+   • "list network connections"
+
+🌐 NODE MANAGEMENT
+   switch_node   - Change active server
+   list_nodes    - Show all nodes
+   node_status   - Check node health
+   
+   Examples:
+   • "switch to kali-vm"
+   • "show all available nodes"
+   • "check status of macbook-local"
+
+📊 MONITORING
+   system_metrics - CPU/RAM/Disk usage
+   network_status - Node connectivity
+   
+   Examples:
+   • "show system metrics"
+   • "what's my CPU usage?"
+   • "network dashboard"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 EXAMPLE COMMANDS (Copy & Try These!)
+
+Basic File Operations:
+1. "write hello world to greeting.txt"
+2. "read greeting.txt"
+3. "list all files"
+4. "create a Python script that prints hello"
+
+Multi-Node Operations:
+5. "switch to kali-vm"
+6. "list files in /home/vasanth"
+7. "switch back to macbook-local"
+8. "show all connected nodes"
+
+System Monitoring:
+9. "show network dashboard"
+10. "what's my current node and path?"
+11. "check disk space"
+12. "show system metrics"
+
+Advanced Operations:
+13. "create 5 test files named test1.txt through test5.txt"
+14. "read all txt files and show their contents"
+15. "execute ls -la command"
+16. "sync files from kali-vm to macbook-local"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎓 HOW TO USE NACC
+
+1. CHECK YOUR CONTEXT
+   Look at top indicator showing:
+   🖥️ Node: Your current server
+   📁 Path: Your current directory  
+   🛠️ Tool: What NACC is doing
+   🔧 MCP: Which protocol is active
+
+2. WRITE NATURAL COMMANDS
+   Just type what you want:
+   "create a file"
+   "list my files"
+   "switch to kali"
+   
+3. SWITCH BACKENDS
+   Use dropdown at top to change AI provider
+   • Free options work instantly
+   • Paid options need API key
+   • Docker Mistral is fastest free option (51s)
+
+4. BROWSE FILES
+   Click "File Browser" tab to see directory listing
+   Navigate with buttons or type path
+
+5. MONITOR SYSTEMS
+   Click "Dashboard" tab for real-time metrics
+   See CPU, RAM, disk, uptime for all nodes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🏗️ ARCHITECTURE
+
+Frontend (This UI)
+  ↓ HTTP/REST
+Orchestrator (Port 8888)
+  ↓ MCP Protocol
+Node Agents (Each server)
+  ↓ Shell/OS
+Your Systems
+
+AI Backend (Port varies)
+  → Modal/Docker/Blaxel/etc
+  → Natural language → JSON tools
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 QUICK START
+
+1. Try file operations:
+   "write hello to test.txt"
+   
+2. Check your nodes:
+   "show all nodes"
+   
+3. Browse directories:
+   Click "File Browser" tab
+   
+4. Switch AI backends:
+   Use dropdown at top
+   
+5. Monitor systems:
+   Click "Dashboard" tab
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📞 TROUBLESHOOTING
+
+Q: "Command takes too long"
+A: Some AI backends take 50-60s. Try Docker Mistral (fastest free)
+   or use paid Cerebras (<5s)
+
+Q: "File not found"
+A: Check your workspace: {get_nacc_workspace()}
+   Or specify full path: "read /home/user/file.txt"
+
+Q: "Permission denied"
+A: Some commands restricted by security. Check orchestrator logs.
+
+Q: "Node offline"
+A: Check Dashboard tab. Restart node agent if needed.
+
+Q: "Wrong node"
+A: Use "switch to [node-name]" to change active node
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 PRO TIPS
+
+• Use Docker Mistral for fastest free responses (51s)
+• Specify full paths to avoid confusion
+• Check context indicator before executing
+• Use File Browser tab to navigate visually
+• Switch backends for speed vs quality tradeoff
+• All files created go to {get_nacc_workspace()}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Created: {datetime.now().strftime('%Y-%m-%d %H:%M')}
+Version: 2.0 (Multi-Backend Support)
+Status: ✅ Operational""",
+                            lines=40,
+                            interactive=False,
+                            elem_classes="output-text"
+                        )
+                
+                # Tab 4: Examples Gallery
+                with gr.Tab("🎯 Try These Examples!"):
+                    ex_col1, ex_col2 = gr.Row(), gr.Row()
+                    
+                    with ex_col1:
+                        gr.Markdown("""### � Copy & Paste These Commands!
+                        
+**Basic File Operations:**
+```
+write hello world to myfile.txt
+```
+```
+read myfile.txt
+```
+```
+list all files in my workspace
+```
+```
+create a Python script hello.py that prints hello world
+```
+
+**Node Management:**
+```
+show all available nodes
+```
+```
+switch to kali-vm
+```
+```
+what's my current node and path?
+```
+```
+switch back to macbook-local
+```
+
+**System Monitoring:**
+```
+show network dashboard
+```
+```
+check disk space
+```
+```
+what's my CPU usage?
+```
+```
+show system metrics for all nodes
+```
+""")
+                    
+                    with ex_col2:
+                        gr.Markdown("""### 🎓 What NACC Will Show You
+
+For each command, NACC displays:
+
+**1. Current Context (Top Indicator)**
+- 🖥️ **Node:** Which server you're on
+- 📁 **Path:** Current directory
+- 🛠️ **Tool:** What operation is running
+- 🔧 **MCP:** Protocol being used
+
+**2. AI Reasoning**
+- What tool it chose
+- Why it chose that tool
+- Parameters it's using
+
+**3. Execution Results**
+- Command output
+- Success/failure status
+- Any errors or warnings
+
+**4. Updated State**
+- New files created
+- Directory changes
+- Node switches
+
+**Example Output:**
+```
+🖥️ Node: macbook-local
+📁 Path: ~/nacc-workspace
+🛠️ Tool: write_file
+🔧 MCP: filesystem
+
+✅ Successfully created myfile.txt
+📄 Content: "hello world"
+```
+""")
+                    
+                    gr.Markdown(f"""
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+### 🎯 Real Examples from This Session
+
+**Your NACC Workspace:** `{get_nacc_workspace()}`
+
+**Try These Right Now:**
+
+1. **Create Your First File:**
+   `write my name is [your name] to intro.txt`
+   
+2. **List Your Workspace:**
+   `show all files in my workspace`
+   
+3. **Read What You Created:**
+   `read intro.txt`
+   
+4. **Check Your System:**
+   `show network dashboard`
+   
+5. **Switch Nodes:**
+   `list all available nodes`
+
+**Advanced Examples:**
+
+6. **Create Multiple Files:**
+   `create 3 files test1.txt, test2.txt, test3.txt with different content`
+   
+7. **Python Script:**
+   `write a Python script calculator.py that adds two numbers`
+   
+8. **System Info:**
+   `execute uname -a command to show system info`
+   
+9. **Navigate Directories:**
+   `list files in /usr/local/bin`
+   
+10. **Multi-Node Operation:**
+    `sync all txt files from macbook to kali-vm`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+### ⚡ Performance Tips
+
+- **Fastest Free AI:** Docker Mistral (51s) 
+- **Best Quality Free:** Modal A100 (55s)
+- **Fastest Paid:** Cerebras (<5s) - needs API key
+- **Best Quality Paid:** OpenAI GPT-4 (<10s) - needs API key
+
+**Switch backends at the top of this page!**
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+""")
+
+        
+        # Status Bar at bottom
+        with gr.Row():
+            status = gr.Markdown(
+                """
+                <div class='status-bar'>
+                ✅ <strong>Ready for commands</strong> | 
+                🌐 Connected Nodes: Active | 
+                🔒 WCAG 2.1 AA Compliant | 
+                🤖 Professional AI Mode | 
+                📡 Real-time Monitoring
+                </div>
+                """,
+                elem_classes="status-bar"
+            )
         
         # Event Handlers
         def send_message(msg, hist, sid):
@@ -856,7 +994,7 @@ def create_professional_ui_v2():
             outputs=[chatbot, msg_input, dashboard_output, file_output, session_id]
         )
         
-        # File browser navigation
+        # File browser navigation - SESSION AWARE
         def go_to_path(path, sid):
             session = nacc.get_or_create_session(sid)
             session.current_path = path
@@ -869,6 +1007,12 @@ def create_professional_ui_v2():
             session.current_path = parent
             return parent, nacc.list_files_view(parent, session.current_node)
         
+        cd_btn.click(
+            fn=go_to_path,
+            inputs=[current_path, session_id],
+            outputs=[file_output]
+        )
+        
         up_btn.click(
             fn=go_to_parent,
             inputs=[current_path, session_id],
@@ -879,6 +1023,30 @@ def create_professional_ui_v2():
             fn=go_to_path,
             inputs=[current_path, session_id],
             outputs=[file_output]
+        )
+        
+        ex1.click(
+            fn=lambda h, s: nacc.handle_chat("Show me the real-time network dashboard", h, s),
+            inputs=[chatbot, session_id],
+            outputs=[chatbot, msg_input, dashboard_output, file_output, session_id]
+        )
+        
+        ex2.click(
+            fn=lambda h, s: nacc.handle_chat("List all files on the production server", h, s),
+            inputs=[chatbot, session_id],
+            outputs=[chatbot, msg_input, dashboard_output, file_output, session_id]
+        )
+        
+        ex3.click(
+            fn=lambda h, s: nacc.handle_chat("Execute comprehensive health checks", h, s),
+            inputs=[chatbot, session_id],
+            outputs=[chatbot, msg_input, dashboard_output, file_output, session_id]
+        )
+        
+        ex4.click(
+            fn=lambda h, s: nacc.handle_chat("list available nodes", h, s),
+            inputs=[chatbot, session_id],
+            outputs=[chatbot, msg_input, dashboard_output, file_output, session_id]
         )
         
         refresh_dash.click(
@@ -944,7 +1112,7 @@ def create_professional_ui_v2():
             fn=handle_refresh_backends,
             outputs=[backend_dropdown, backend_info, backend_status]
         )
-
+    
     return demo
 
 
@@ -957,8 +1125,7 @@ def main():
         share=False,
         show_error=True,
         favicon_path=None,
-        debug=True,
-        allowed_paths=["."]
+        debug=True
     )
 
 

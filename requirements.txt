@@ -1,0 +1,26 @@
+# NACC Core Dependencies
+fastapi>=0.115.0
+uvicorn>=0.30.0
+gradio>=6.0.0  # Upgraded to 6.0
+pydantic>=2.8.2
+pyyaml>=6.0.2
+requests>=2.32.0
+psutil>=6.0.0
+paramiko>=3.5.0
+pyjwt>=2.9.0
+python-multipart>=0.0.9
+
+# AI Backend Dependencies
+# Blaxel (Default) - No extra pip packages needed, uses HTTP
+
+# Optional backends (install if using)
+# modal>=0.63.0               # For Modal backend
+# google-generativeai>=0.3.0  # For Gemini backend
+# openai>=1.0.0               # For OpenAI backend
+
+# Development Dependencies
+pytest>=8.0.0
+pytest-cov>=4.0.0
+black>=24.0.0
+ruff>=0.6.0
+python-dotenv>=1.0.0

@@ -1,825 +1,550 @@
-# NACC (Network Agentic Connection Call)# NACC - Network-Aware Computing Cluster# NACC (Network Agentic Connection Call)
-
-
-
-AI-powered multi-node network orchestration system with intelligent command routing and real-time monitoring.
-
-
-
-## 🚀 FeaturesMulti-node AI-powered network orchestration system with intelligent command routing and real-time monitoring.NACC is an MCP-based, agentic orchestration platform that unifies multiple machines into a single intelligent network. From one dashboard, you can:
-
-
-
-- 🤖 **AI-Powered Intent Detection** - Natural language commands via Docker AI (Mistral-NeMo 12B)
-
-- 🖥️ **Multi-Node Orchestration** - Control Mac, Kali, Linux nodes from single interface
-
-- 📊 **Real-time Monitoring** - Live dashboard with node health and system metrics## Features- Discover and manage nodes (laptops, servers, VMs)
-
-- 🔄 **Dynamic Node Switching** - Seamlessly switch between nodes during operations
-
-- 📁 **File Operations** - Create, read, transfer files across nodes- Browse and sync files across machines
-
-- 📦 **Package Management** - Install packages (brew, apt, pip) via natural language
-
-- ⚡ **Command Execution** - Execute commands with full output capture- 🤖 **AI-Powered Intent Detection** - Natural language interface for network operations- Execute commands in parallel with real-time logs
-
-
-
-## Quick Start- 🖥️ **Multi-Node Orchestration** - Control multiple nodes (Mac, Kali, Linux) from single interface- Let **Docker AI (Mistral-NeMo)** decide *where* and *how* tasks should run
-
-
-
-### 1. Setup Environment- 📊 **Real-time Monitoring** - Live dashboard with node health and metrics
-
-```bash
-
-python3 -m venv .venv- 🔄 **Dynamic Node Switching** - Seamlessly switch between nodes during operationsEvery "node" in NACC is a **real computer, VM, or container** running the MCP node server—discovered and managed centrally whether it lives on your LAN, VPN, or halfway across the cloud.
-
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-pip install -e .- 📁 **File Operations** - Create, read, and manage files across nodes
-
-```
-
-- 📦 **Package Management** - Install packages (brew, apt, pip) via natural language  **✨ HACKATHON BREAKTHROUGH**: Successfully integrated Docker Desktop AI for real intelligent routing - the AI analyzes node capabilities and makes actual decisions (not heuristics!). Currently orchestrating a Kali Linux VM with plans to expand to physical machines.
-
-### 2. Start Orchestrator
-
-```bash- ⚡ **Command Execution** - Execute arbitrary commands with proper output handling
-
-python -m src.nacc_orchestrator.cli serve --config configs/orchestrator-vms.yml
-
-```This project is designed for the MCP 1st Birthday Hackathon (Enterprise track).
-
-
-
-### 3. Launch UI## Quick Start
-
-```bash
-
-python -m src.nacc_ui.professional_ui_v2> Status: **🏆 HACKATHON READY – Docker AI + Real VMs + Full MCP Stack (v0.5.0)**
-
-```
-
-```bash
-
-Access at: **http://localhost:7860**
-
-# 1. Setup## 🚀 See It In Action
-
-## Architecture
-
-python3 -m venv .venv && source .venv/bin/activate
-
-```
-
-┌──────────────────────────────────────────┐pip install -e .```bash
-
-│     Gradio UI (Port 7860)                │
-
-│  Natural Language Interface + Dashboard  │# Run the full demo (showcases AI routing, VM control, MCP tools)
-
-└─────────────────┬────────────────────────┘
-
-                  │# 2. Start Orchestrator./scripts/full_demo.sh
-
-                  ▼
-
-┌──────────────────────────────────────────┐python -m src.nacc_orchestrator.cli serve --config configs/orchestrator-vms.yml
-
-│   Orchestrator (Port 8888)               │
-
-│  • AI Intent Parser (Mistral-NeMo 12B)   │# Or try individual commands:
-
-│  • Node Registry & Health Monitoring     │
-
-│  • Command Routing & Execution           │# 3. Launch UI# 1. Let AI route a security scan to Kali VM
-
-└──────┬───────────────┬───────────────────┘
-
-       │               │python -m src.nacc_ui.professional_ui_v2nacc-orchestrator exec --description "Run network scan" --cmd nmap --version
-
-       ▼               ▼
-
- ┌──────────┐    ┌──────────┐```
-
- │ Mac Node │    │Kali Node │
-
- │ (Local)  │    │(VM:8765) │# 2. Check AI health and reasoning
-
- └──────────┘    └──────────┘
-
-```Access at: http://localhost:7860nacc-orchestrator agents-check --message "Are all systems operational?"
-
-
-
-## Usage Examples
-
-
-
-### Natural Language Commands## Architecture# 3. Browse files on remote node
-
-```
-
-"switch to kali"nacc-orchestrator mcp ListFiles --node-id kali-vm --path /home/vasanth
-
-"create file test.txt with content hello world"
-
-"install cowsay package"``````
-
-"execute ls -la /home/vasanth"
-
-"read file /etc/hosts"Web UI (7860) → Orchestrator (8888) → Nodes (Mac/Kali)
-
-```
-
-```**What makes this special?** The AI actually reads your request, analyzes available nodes (their tags, capabilities, OS), and makes an intelligent routing decision. No hardcoded rules!
-
-### Node Operations
-
-- `switch to mac` - Switch to Mac node
-
-- `switch to kali` - Switch to Kali VM
-
-- `list nodes` - Show all nodesSee [NACC-Quick-Reference.md](./NACC-Quick-Reference.md) and [VM-SETUP-GUIDE.md](./VM-SETUP-GUIDE.md) for details.---
-
-
-
-### File Operations
-
-- `create file name.txt with content xyz` - Create file
-
-- `read file /path/to/file` - Read contents## RepositoryThe goal of this README is to:
-
-- `execute rm file.txt` - Delete file
-
-
-
-### Package Management
-
-- `install package-name` - Auto-detects package manager (apt/brew/pip)https://github.com/Vasanthadithya-mundrathi/NACC.git- Capture the architecture and plan for the NACC platform
-
-
-
-## Node Setup- Define how the MCP node and orchestrator should behave
-
-- Document how to run and extend the system once implemented
-
-### Kali VM Node- Track future integration points (VS Code, other IDEs, multi-device rollout)
-
-```bash
-
-# On Kali VM## Quickstart (Local Demo)
-
-cd /home/vasanth/nacc
-
-source .venv/bin/activate1. **Bootstrap the environment** – `./setup_nacc.sh` (installs Python 3.12, creates `.venv`, runs `pip install -e .`).
-
-python -m src.nacc_node.cli serve --config node-config.yml --host 0.0.0.0 --port 87652. **Configure components** – copy the sample YAMLs:
-
-```  ```bash
-
-  cp configs/node-config.example.yml node.yml
-
-### Configuration  cp configs/orchestrator-config.example.yml orchestrator.yml
-
-Edit `configs/node-config.yml`:  cp configs/ui-config.example.yml ui.yml
-
-```yaml  ```
-
-node_id: kali-vm  Update the `root_dir` entries to point at a real folder on your machine.
-
-root_dir: /home/vasanth3. **Run a node** – `nacc-node serve --config node.yml --host 127.0.0.1 --port 8765`.
-
-description: Kali Linux VM with security tools4. **Run the orchestrator** – `nacc-orchestrator serve --config orchestrator.yml --host 127.0.0.1 --port 8888`.
-
-tags: [kali, linux, pentesting]5. **Validate the agent backend** – `nacc-orchestrator agents-check --config orchestrator.yml --message "health check"` (hits Docker Mistral or the heuristic fallback).
-
-allowed_commands:6. **Launch the dashboard** – `nacc-ui serve --config ui.yml --share` and open the link to browse nodes/files or execute commands.
-
-  - sudo
-
-  - aptSee `docs/end-to-end-demo.md` for a deeper, multi-terminal walkthrough (including Docker-based LLM routing).
-
-  - bash
-
-  - python3## Multi-Device Connectivity at a Glance
-
-  # ... more commands
-
-``````
-
-┌────────────┐        HTTPS / VPN / SSH tunnel        ┌─────────────┐
-
-Edit `configs/orchestrator-vms.yml`:│  Host UI   │  ───────────────────────────────────▶  │  Node A     │ (Laptop)
-
-```yaml│ + Orchestr │◀───────────────────────────────────┐   │ nacc-node   │
-
-nodes:└────┬───────┘                                       └─────────────┘
-
-  - node_id: macbook-local  │                                              ┌─────────────┐
-
-    transport: filesystem  │ gRPC/HTTP over LAN/VPN                       │  Node B     │ (Linux VM)
-
-    root_dir: /Users/username  ├────────────────────────────────────────────▶  │ nacc-node   │
-
-    tags: [mac, laptop, local]  │                                              └─────────────┘
-
-      │                                              ┌─────────────┐
-
-  - node_id: kali-vm  │                                              │  Node C     │ (Container / cloud VM)
-
-    transport: http  └────────────────────────────────────────────▶  │ nacc-node   │
-
-    endpoint: http://192.168.64.2:8765                      └─────────────┘
-
-    tags: [kali, linux, vm]```
-
-```
-
-- **Automatic discovery (roadmap)** via Zeroconf/mDNS for LANs.
-
-## Testing- **Manual registration (today)** supports any hostname/IP/CNAME across VPNs or clouds.
-
-- **Badges:** ✅ Supports VMs · ✅ Cloud-ready tunnels · ✅ Gemini / Modal / Blaxel agent-compatible.
-
-Comprehensive test results (97% pass rate):
-
-- ✅ Node switching (3/3)### First-Run Checklist (5 minutes)
-
-- ✅ File creation (6/6)
-
-- ✅ File reading (3/3)1. ✅ Environment bootstrapped (`./setup_nacc.sh` or Poetry install)
-
-- ✅ Command execution (6/6)2. ✅ `node.yml` points at a real directory you don’t mind sharing
-
-- ✅ Package installation (1/3)3. ✅ `orchestrator.yml` lists at least one node with reachable host/port
-
-- ✅ File deletion (3/3)4. ✅ Docker container (or heuristic mode) available for agent prompts
-
-- ✅ File sharing (3/3 via read+write)5. ✅ Firewall allows inbound traffic on node/orchestrator ports (default 8765 / 8888)
-
-6. ✅ UI config references the orchestrator URL
-
-**Total: 29/30 tests passed**
-
-> Bring this list up during demos to prove you covered connectivity, security, and AI wiring before showing features.
-
-## Project Structure
-
-```### How to Demo with VMs or Containers
-
-nacc/
-
-├── src/Spin up two lightweight VMs (or Docker containers) on your laptop or cloud provider:
-
-│   ├── nacc_node/         # Node server implementation
-
-│   ├── nacc_orchestrator/ # Orchestration logic + AI```bash
-
-│   └── nacc_ui/           # Gradio web interface# in VM/container 1
-
-├── configs/               # Configuration filesnacc-node serve --config node-linux-vm.yml --host 0.0.0.0 --port 8771
-
-├── tests/                 # Test suite
-
-└── docs/                  # Documentation# in VM/container 2
-
-```nacc-node serve --config node-windows-vm.yml --host 0.0.0.0 --port 8772
-
-
-
-## Documentation# on your host/orchestrator machine
-
-nacc-orchestrator serve --config orchestrator-three-node.yml --host 127.0.0.1 --port 8888
-
-- [NACC Quick Reference](./NACC-Quick-Reference.md) - API and tools reference```
-
-- [VM Setup Guide](./VM-SETUP-GUIDE.md) - Setting up Kali VM node
-
-Both nodes register via YAML and immediately appear in the dashboard. Use `ssh -L` or Tailscale/VPN if the VMs live in the cloud.
-
-## Troubleshooting
-
-## High-Level Architecture
-
-### Node Not Connecting
-
-- Check node server: `curl http://NODE_IP:PORT/healthz`### 1. Node MCP Server (`nacc_node`)
-
-- Verify firewall allows connections
-
-- Check node-config.yml has correct settingsRuns on each machine and exposes a standard set of MCP tools:
-
-
-
-### AI Not Responding- **ListFiles**
-
-- Ensure Docker Desktop AI is running  - Input: `path`, `recursive`, `filter`
-
-- Check Mistral-NeMo 12B model loaded  - Output: file list with metadata
-
-- Verify orchestrator can reach Docker- **ReadFile**
-
-  - Input: `path`, `encoding`
-
-### Command Fails  - Output: file contents + hash
-
-- Check `allowed_commands` in node-config.yml- **WriteFile**
-
-- Verify node has proper permissions  - Input: `path`, `content`, `overwrite`
-
-- Check node server logs  - Output: success + new hash + backup path
-
-- **ExecuteCommand**
-
-## Repository  - Input: `command`, `timeout`, `env`, `cwd`
-
-  - Output: `stdout`, `stderr`, `exit_code`, `duration`
-
-**GitHub:** https://github.com/Vasanthadithya-mundrathi/NACC.git- **SyncFiles**
-
-  - Input: `source_node`, `dest_nodes`, `source_path`, `strategy`
-
-## License  - Output: sync report (files, bytes, checksums)
-
-- **GetNodeInfo**
-
-MIT License  - Input: none
-
-  - Output: CPU%, memory%, disk%, OS, capabilities
-
-Responsibilities:
-
-- Local filesystem and subprocess control
-- Node health reporting
-- Optional sandboxing via Docker/cgroups
-
-Current implementation status:
-
-- `nacc-node serve --config <file>` loads a YAML config (`configs/node-config.example.yml`) that defines the root directory, allowed commands, and sync targets.
-- The HTTP server exposes `POST /tools/<name>` for each tool plus `GET /healthz` and `GET /node` for heartbeat/metadata.
-- CLI users can still call `nacc-node list-files` directly, or interact over HTTP via `curl`/`httpie`.
-
-### 2. Orchestrator (`nacc_orchestrator`)
-
-Runs centrally and is responsible for:
-
-- Keeping a registry of nodes (IDs, addresses, OS, tags, capabilities)
-- Calling MCP tools on any node
-- Talking to LLM agents to:
-  - Route tasks
-  - Plan sync operations
-  - Decide execution strategy
-  - Enforce security policy
-
-Key internal modules (implemented):
-
-- `config.py` – YAML loader that hydrates `NodeDefinition`, `AgentBackendConfig`, and audit settings.
-- `nodes.py` – node registry plus HTTP and local transports backed by the real node tools.
-- `agents.py` – Router / Execution / Security / Sync agents with Docker Mistral + heuristic backends.
-- `audit.py` – append-only JSONL logging with automatic trimming.
-- `service.py` – orchestrator brain that wires registry + agents + audit.
-- `server.py` – FastAPI HTTP surface for health, nodes, files, commands, sync, and agent probes.
-- `cli.py` – `serve`, `list-files`, `exec`, and the new `agents-check` subcommands.
-
-### 3. Agent Layer
-
-LLM-powered decision-making, pluggable backends:
-
-- Default: Docker-hosted Mistral-NeMo (container id `ccdfa597c64`, configurable via env var) invoked with `docker exec`.
-- Fallback: Local heuristic backend for offline dev/tests.
-
-Implemented agents:
-
-- **Router Agent**
-  - Question: which node(s) should run this task?
-  - Inputs: task description, node stats (`GetNodeInfo`), OS/role requirements
-  - Output: selected nodes, execution mode (parallel/sequential), reasoning
-
-- **Sync Agent**
-  - Question: what files should be synced, where, and how?
-  - Inputs: file path, source node, candidate targets, file metadata
-  - Output: sync plan (targets, full vs delta, priority)
-
-- **Execution Agent**
-  - Question: how to run this safely and efficiently?
-  - Inputs: command, selected nodes, resource limits, policies
-  - Output: timeout, sandbox profile, parallelism, restart policy, explanation
-
-- **Security Agent**
-  - Question: is this action allowed, and how do we log it?
-  - Inputs: user role, action, node(s), policy config
-  - Output: allow/deny, log level, audit entry details
-
-### 4. UI Layer (`nacc_ui`)
-
-- Built with Gradio Blocks (Nodes, Files, Command Center tabs).
-- Live node table with health status, CPU/memory, tags, and dropdowns tied to node/file pickers.
-- File browser calls `/nodes/{id}/files` and streams raw JSON for debugging.
-- Command center captures description + command + preferred tags then shows execution JSON.
-- CLI entry point `nacc-ui serve --config ui.yml [--share|--dry-run]` for validation and deployment.
-- Future work: audit log viewer + streaming logs panel.
-
-### 5. Persistence
-
-- SQLite or files for:
-  - Node registry (or config file)
-  - Task history
-  - Audit logs (append-only, ideally signed)
-- Config files (YAML/JSON) for:
-  - Node definitions
-  - RBAC roles
-  - Command whitelists
-  - LLM backend selection
-
-## Node Discovery & Registration
-
-| Mode | How it works | When to use |
-| --- | --- | --- |
-| **Manual (available today)** | Add hostnames/IPs/CNAMEs to `orchestrator.yml` using `transport: http` or `transport: local`. | Any environment (LAN, VPN, cloud) where you already know the address or have SSH/HTTPS reachability. |
-| **Automatic (roadmap)** | `nacc-orchestrator discover` will broadcast Zeroconf/mDNS beacons and auto-seed entries. | Friendly LANs/labs where multicast is allowed. |
-
-Need a visual walkthrough? See `docs/node-discovery.md` for a side-by-side diagram covering laptops, VMs, and containers plus guidance on mixing both approaches.
-
-**HOW TO ADD YOUR SECOND (OR THIRD) NODE**
-
-1. Copy one of the sample configs (`configs/node-linux-vm.yml`, etc.).
-2. Update `node_id`, `root_dir`, and `base_url`/`root_dir` fields.
-3. Append the node to `orchestrator-three-node.yml` (or your own file) with matching `node_id`.
-4. Restart `nacc-orchestrator` (hot reload is on the roadmap) and refresh the UI Nodes tab.
-5. Optional: tag the node (`tags: [windows, gpu]`) so Router Agent can target it.
-
-### Troubleshooting: “My nodes aren’t showing up”
-
-1. 🔌 **Port access** – ensure nodes expose port 8765 (or your custom port) through firewalls/security groups.
-2. 🔒 **VPN/bridge** – on macOS Docker Desktop, switch networking mode to “bridge” and forward the MCP port; on cloud VMs, create `ssh -L 8765:localhost:8765` tunnels.
-3. 🆔 **Config mismatch** – the `node_id` in the node config must match the entry in `orchestrator.yml`.
-4. 📝 **Auth tokens** – if you secure HTTP nodes with tokens, set `auth_token` in the orchestrator config.
-5. 🪵 **Logs** – check `logs/audit.log` plus node stdout for rejected requests.
-
-## Cloud & Remote Node Playbook
-
-- **SSH tunnels** keep ports private:
-  ```bash
-  ssh -N -L 9876:127.0.0.1:8765 ubuntu@cloud-vm
-  ```
-  Register the node with `base_url: http://127.0.0.1:9876`.
-- **HTTPS endpoints** via reverse proxies (Caddy/Traefik/ngrok/AWS ALB) – terminate TLS, add mutual-auth certificates, and set `auth_token`.
-- **VPN / zero-trust overlays** (Tailscale, WireGuard, Cloudflare Tunnel) ensure orchestrator ⇄ node communication stays encrypted even on public internet.
-- **Docker Compose testnet** (see `docker-compose.testnet.yml`) spins up an orchestrator plus two containerized nodes locally for hackathon demos.
-- **Cloud bootstrap scripts (future work)** – `docs/node-discovery.md` lists the commands for Azure VM Scale Sets, AWS Auto Scaling Groups, and GCP Managed Instance Groups so you can automate deployments next.
-
-## Security & Access Recommendations
-
-- **Sandbox every node** – run `nacc-node` inside Docker or a dedicated VM, limit `root_dir`, and keep `allowed_commands` tight.
-- **RBAC + MFA** – pair orchestrator access with SSO (Okta/Auth0), enforce MFA, and map roles to `allowed_commands`/tags. (Full RBAC is a tracked stretch goal, but the configs are ready.)
-- **Mutual TLS / tokens** – terminate TLS in front of every HTTP node and require both client certs and bearer tokens; never leave plain HTTP exposed beyond localhost.
-- **SSH key-only access** – when bridging to remote shells, disable password logins and use short-lived certificates (e.g., `teleport`).
-- **Audit everything** – forward `logs/audit.log` to your SIEM or Splunk and enable immutable storage for compliance.
-
-## Showcase Demo Flow (Host + 2 VMs)
-(See `docs/scenario-multi-node.md` for a narrated script with commands.)
-
-1. **Start three nodes** using the bundled configs:
-  ```bash
-  nacc-node serve --config configs/node-laptop.yml --port 8765
-  nacc-node serve --config configs/node-linux-vm.yml --port 8766
-  nacc-node serve --config configs/node-windows-vm.yml --port 8767
-  ```
-2. **Orchestrator** reads `configs/orchestrator-three-node.yml` (included) so all nodes appear in the UI.
-3. **File browser** – open each node, edit `shared/README.txt`, and show hashes updating live.
-4. **Parallel jobs** – run `pytest` or `./scripts/smoke.sh` across all nodes via Command Center; highlight simultaneous logs.
-5. **Resilience** – stop one node; note how it flips to ⚠️ in the Nodes tab while others still execute.
-6. **Sync** – edit a file on `laptop`, call `SyncFiles` to push to both VMs, then verify with `list-files` (conflicts resolved by latest timestamp).
-
-> Judges love seeing real orchestration, fault handling, and data movement. This flow mirrors the Quick Reference checklist and takes < 5 minutes live.
-
-## Improvement Highlights
-
-| Suggestion | Why it matters |
-| --- | --- |
-| Be explicit about real + VM nodes | Removes ambiguity for judges; demonstrates tangible multi-device reach. |
-| Troubleshoot discovery & setup | Reduces demo friction when firewalls/VPNs misbehave. |
-| Cloud/node config samples | Helps enterprises picture hybrid + remote deployments immediately. |
-| Security details in docs/UI | Signals readiness for production and compliance reviews. |
-| Sponsor integration callouts | Shows how Gemini/Modal/Blaxel can plug in, boosting hackathon scores. |
-| Demo flow: multi-node use | Proves orchestration, resilience, and data sync with live steps. |
-| Doc polish & first-run checklist | Makes onboarding painless for new contributors and evaluators. |
-
-## Project Plan & Milestones
-
-Implementation will roughly follow these phases (aligned with `NACC-Quick-Reference.md`):
-
-1. ✅ **Project skeleton** – complete (Poetry project + scripts + tests).
-2. ✅ **Single-node MCP server** – HTTP server + CLI + full tool suite running off YAML configs.
-3. ✅ **Multi-node orchestrator** – Node registry, FastAPI server, audit logging, CLI, and HTTP/local transports.
-4. ✅ **MVP UI** – Gradio dashboard with live nodes table, file browser, and command center.
-5. ✅ **Agents + local LLM integration** – Router/Execution/Security/Sync agents with Docker Mistral backend + heuristic fallback; exposed via `agents-check` and `/agents/probe`.
-6. 🚧 **Security & polish** – RBAC + advanced UI planned as stretch goals (tracked in `docs/completion-plan.md`).
-
-Milestones and notable changes are tracked in `CHANGELOG.md`.
-
-## Current Status (Planned / To Build)
-
-All items through phase 5 are shipped in v0.4.0 (see `docs/completion-plan.md` for details). Remaining stretch targets—RBAC, signed audits, VS Code extension—are tracked as "Next" tasks in that document.
-
-## Using a Local LLM (Mistral-NeMo)
-
-The orchestrator’s agent layer supports interchangeable backends:
-
-- `docker-mistral` – default; shells into your container (set `agent_backend.container_id` or export `NACC_DOCKER_LLM_CONTAINER`).
-- `local-heuristic` – deterministic fallback for development and CI (no Docker needed).
-
-Use the new probe utilities to confirm the backend is wired correctly before running agents:
-
-```bash
-nacc-orchestrator agents-check --config orchestrator.yml --message "health check"
-curl -X POST http://127.0.0.1:8888/agents/probe -d '{"message": "ping"}' -H 'Content-Type: application/json'
-```
-
-### Switching Agent Providers (Gemini / Modal / Blaxel)
-
-```yaml
-agent_backend:
-  kind: docker-mistral   # swap to gemini, modal, or blaxel-sandbox as adapters become available
-  container_id: ccdfa597c64
-  command: ["python", "/opt/mistral/mcp_router.py"]
-  environment:
-    GEMINI_API_KEY: ${GEMINI_API_KEY}
-    MODAL_TOKEN: ${MODAL_TOKEN}
-    BLAXEL_PROFILE: "sandbox-safe"
-```
-
-- `local-heuristic` remains the no-external-dependency dev mode.
-- Upcoming adapters reuse this exact schema so sponsors can plug in API keys without modifying the orchestrator.
-- See inline comments in `nacc_orchestrator/agents.py` for where to add new providers.
-
-## Testing & DevOps Playbook
-
-- **Testnet mode:** run `docker-compose -f docker-compose.testnet.yml up` to spawn multiple local node containers plus the orchestrator for rapid iteration.
-- **One-command demo:** `scripts/run_demo.sh` spins up three local nodes, the orchestrator, and the UI with fresh configs/logs for quick validation.
-- **Pytest suite:** `pytest -k orchestrator` exercises planner/agents; `pytest -k e2e` runs the cross-node scenario.
-- **CI/CD runners as nodes:** register GitHub Actions self-hosted runners or GitLab agents with `transport: http` so your pipelines can execute workloads via NACC.
-- **GitHub Actions example:** see `docs/end-to-end-demo.md#ci-mode` for a workflow that boots a node, runs tests, and tears it down.
-- **Release automation:** integrate `agents-check` and `/healthz` probes into smoke tests to verify LLM + registry availability before promoting builds.
-
-## Commands, Tools, and Nodes
-
-This section describes the **intended** commands and tools once the codebase is created. It acts as a spec for the upcoming implementation.
-
-### Python Environment
-
-Planned layout (subject to change once code is added):
-
-- `src/nacc_node/` – MCP node server implementation
-- `src/nacc_orchestrator/` – central orchestrator
-- `src/nacc_ui/` – Gradio UI application
-- `tests/` – unit/integration tests
-
-Dependency management options (pick one during implementation):
-
-1. **Poetry / `pyproject.toml`** (preferred)
-2. `requirements.txt` + virtualenv
-
-### CLI Entry Points (planned)
-
-Once implemented, the following commands are expected (via `poetry run` or `python -m`):
-
-- **Run a node MCP server** (on each machine):
-  - `nacc-node start --port 8765 --config path/to/node-config.yml`
-  - Responsibilities:
-    - Start MCP server
-    - Expose ListFiles / ReadFile / WriteFile / ExecuteCommand / SyncFiles / GetNodeInfo
-    - Periodically report health to orchestrator (optional)
-
-- **Run the orchestrator** (central):
-  - `nacc-orchestrator start --config path/to/orchestrator-config.yml`
-  - Responsibilities:
-    - Maintain node registry
-    - Call MCP tools on nodes
-    - Talk to router/sync/execution/security agents
-    - Expose API for UI / external integrations
-
-- **Run the UI**:
-  - `nacc-ui serve --config path/to/ui-config.yml`
-  - Responsibilities:
-    - Start Gradio dashboard
-    - Connect to orchestrator API
-    - Show nodes, files, commands, tasks, and audit logs
-
-Current status (v0.4.0): all three CLIs are available today.
-
-- ✅ `nacc-node serve` + tool helpers (List/Read/Write/Sync/Execute/Get info).
-- ✅ `nacc-orchestrator serve|list-files|exec|agents-check` hitting real registries/agents.
-- ✅ `nacc-ui serve|--dry-run` launching the Gradio dashboard.
-
-### Node Concepts
-
-A **node** is any machine running `nacc_node`.
-
-Each node is expected to have:
-
-- A unique node ID (UUID or human-readable name)
-- Network address / MCP endpoint
-- OS / platform metadata
-- Capabilities (e.g. `linux`, `windows`, `gpu`, `high-memory`)
-- Security profile (allowed commands, sandbox level)
-
-The orchestrator’s node registry will map:
-
-- `node_id -> connection info, tags, status, last_seen`
-
-This is used heavily by the Router and Sync agents.
-
-### Node configuration
-
-The node server currently reads a YAML config with the following shape:
-
-```yaml
-node_id: dev-node
-root_dir: /absolute/path/to/share
-description: Optional description
-tags: [dev, laptop]
-allowed_commands: [python, ls, cat, echo]
-sync_targets:
-  backup: /mnt/backups/dev-node
-```
-
-- `root_dir` defines the sandbox for every filesystem/command tool. All paths resolve inside this directory.
-- `allowed_commands` is a simple whitelist for `ExecuteCommand`.
-- `sync_targets` enumerates named directories that `SyncFiles` can copy into (e.g., shared drives or mounted volumes).
-
-Copy `configs/node-config.example.yml`, fill in your paths, and pass it to the CLI: `poetry run nacc-node serve --config my-node.yml`.
-
-## Future Feature: VS Code & Multi-Device Integration
-
-To make NACC usable from **any computer** (and inside IDEs like VS Code), we plan a dedicated integration layer.
-
-### VS Code Extension (planned)
-
-High-level idea:
-
-- Build a VS Code extension (`nacc-vscode`) that can:
-  - Discover the central orchestrator (URL or MCP connection)
-  - List registered nodes and their status in a side panel
-  - Let the user:
-    - Browse remote files (via NACC file tools)
-    - Open remote files in VS Code editors
-    - Run commands/tasks on selected nodes directly from the command palette
-  - Show agent reasoning and audit events in an output panel
-
-Possible implementation pieces:
-
-- Use VS Code’s Webview + TreeView APIs for the dashboard and node list
-- Communicate with the NACC orchestrator over HTTPS/WebSocket
-- Optionally bundle MCP client logic so that VS Code can act as another MCP client
-
-### "Portable access" from other platforms
-
-In addition to VS Code, NACC should be usable from:
-
-- Other IDEs (via a simple HTTP/CLI interface)
-- CI/CD pipelines (e.g. GitHub Actions calling the orchestrator to fan-out tests)
-- Browser-only environments (via the Gradio UI)
-
-Future roadmap items:
-
-- Define a stable REST/gRPC API for orchestrator operations
-- Provide a small `nacc-cli` tool that can be installed on any machine and talk to the orchestrator
-- Publish VS Code extension to the Marketplace with basic node/command support
-
-These integrations are **future work** and will be tracked as milestones in `CHANGELOG.md`.
-
-## Hackathon Alignment
-
-This architecture follows the “NACC: Quick Reference” document:
-
-- Phase 1 (Days 1–5): MVP – node tools + simple UI
-- Phase 2 (Days 6–10): Agents – Router, Sync, Execution
-- Phase 3 (Days 11–15): UI/UX, Security, Docs
-- Phase 4 (Days 16–17): Demo & submission
-
-The goal is a polished, production-feeling MCP-powered orchestrator that shows clear agent reasoning and delivers real value for multi-machine workflows.
-
-## Local Development (Node server milestone)
-
-The repository now ships a working MCP-style node server with HTTP tools, plus orchestrator/UI stubs that will be expanded next.
-
-### 1. One-shot setup script (recommended on macOS)
-
-From the project root, run:
-
-```bash
-chmod +x setup_nacc.sh
-./setup_nacc.sh
-```
-
-This will:
-
-- Ensure `python@3.12` is installed via Homebrew
-- Create a `.venv` using Python 3.12
-- Install the project in editable mode
-- Run the basic test suite
-
-> Need a custom interpreter path? Set `PYTHON=/full/path/to/python3.12 ./setup_nacc.sh`. The script refuses to proceed unless the interpreter is exactly Python 3.12 and will recreate `.venv` if it was built with another version.
-
-After it succeeds, activate the environment with:
-
-```bash
-source .venv/bin/activate
-```
-
-### 2. Install dependencies manually (optional, advanced)
-
-If you prefer Poetry, ensure you have Python 3.10–3.13 and [Poetry](https://python-poetry.org/) installed, then from the project root:
-
-```bash
-poetry install
-```
-
-### 3. Start a node server + call tools
-
-1. Copy the sample config and edit it:
-  ```bash
-  cp configs/node-config.example.yml node-config.yml
-  $EDITOR node-config.yml  # point root_dir to a real folder
-  ```
-2. Launch the server (Ctrl+C to stop):
-  ```bash
-  poetry run nacc-node serve --config node-config.yml --host 127.0.0.1 --port 8765
-  ```
-3. Invoke tools via HTTP or CLI:
-  ```bash
-  curl -s http://127.0.0.1:8765/tools/list-files \
-    -H "Content-Type: application/json" \
-    -d '{"path": ".", "recursive": true}' | jq .count
-  poetry run nacc-node list-files --path src --recursive --with-hash --config node-config.yml
-  ```
-
-### 4. Run the orchestrator API + agents
-
-```bash
-poetry run nacc-orchestrator serve --config orchestrator.yml --host 127.0.0.1 --port 8888
-poetry run nacc-orchestrator list-files --config orchestrator.yml --node auto --path .
-poetry run nacc-orchestrator exec --config orchestrator.yml --description "hello" --cmd echo hello-nacc
-poetry run nacc-orchestrator agents-check --config orchestrator.yml --message "ping"
-```
-
-The HTTP API exposes `/nodes`, `/nodes/{id}/files`, `/commands/execute`, `/sync`, and `/agents/probe` for UI and third-party integrations.
-
-### 5. Launch the UI
-
-```bash
-poetry run nacc-ui serve --config ui.yml --share
-# or perform a config validation without launching the app
-poetry run nacc-ui serve --config ui.yml --dry-run
-```
-
-### 6. Run tests
-
-```bash
-pytest
-```
-
-The suite covers filesystem helpers, CLI entry points, tool functions, and basic sync/command behavior.
+---
+tags:
+- mcp-server-track
+- building-mcp-track-enterprise
+- building-mcp-track-consumer
+- building-mcp-track-creative
+- mcp-in-action
+---
+
+# 🚀 NACC Orchestrator: Network Agentic Command Control
+
+> **Turn your entire network into a single, intelligent entity.**
+
+NACC is a **Multi-Node AI Orchestrator** built on the **Model Context Protocol (MCP)**. It allows you to seamlessly control multiple computers (Mac, Linux, VMs) using natural language from a single interface. Whether you are managing a home lab, a fleet of servers, or just your laptop and a VM, NACC unifies them into one cohesive system.
 
 ---
 
-## 📚 Documentation
+### 🎥 [Watch the Video Demo](LINK_TO_YOUR_VIDEO_HERE)
+### 🐦 [See it on X / LinkedIn](LINK_TO_YOUR_SOCIAL_POST_HERE)
 
-- **[🔥 AI Intent Parser Upgrade](./docs/AI-INTENT-PARSER-UPGRADE.md)** - Critical fix: Real AI parsing (no more "navigating to 'the' folder"!)
-- **[UI Usage Guide](./docs/UI-USAGE-GUIDE.md)** - Complete guide to the conversational UI with context-awareness, multi-tool orchestration, and AI-powered routing
-- **[Conversational UI Architecture](./docs/CONVERSATIONAL-UI.md)** - Technical roadmap and professional UI/UX design plan
-- **[NACC Quick Reference](./NACC-Quick-Reference.md)** - API endpoints and tool reference
-- **[End-to-End Demo](./docs/end-to-end-demo.md)** - Multi-terminal walkthrough with Docker AI routing
+---
 
-### Try the AI Parser
-```bash
-# Open UI at http://localhost:7860 and try:
-"navigate to the downloads folder and make a text file which says hello this is nacc"
+## 🏆 Hackathon Categories
 
-# Watch it:
-# - Resolve "downloads folder" → /home/vasanth/Downloads
-# - Create file with exact content
-# - Show 85% confidence score (even without AI!)
-# - Execute in correct order
+NACC qualifies for **multiple tracks** in the MCP Birthday Hackathon:
 
-# Test the fallback parser:
-python test_intent_parser.py
-# Expected: 4/4 tests pass with 75-85% confidence
+*   **🏢 Enterprise**: Multi-node orchestration for distributed systems and infrastructure management
+*   **� Consumer**: User-friendly natural language interface for home labs and personal workflows
+*   **🎨 Creative**: Innovative hub-and-spoke architecture enabling unprecedented cross-machine AI coordination
+*   **🎯 MCP in Action**: Practical demonstration of MCP's power in real-world scenarios
+
+This project was built **from the ground up** using the Model Context Protocol, showcasing true innovation in distributed AI orchestration.
+
+---
+
+## �📑 Table of Contents
+
+- [Hackathon Categories](#-hackathon-categories)
+- [Architecture](#-architecture)
+- [Key Features](#-key-features)
+- [Why Blaxel](#-why-blaxel-powers-nacc)
+- [How It Works](#-how-it-works)
+- [Installation & Setup](#%EF%B8%8F-installation--setup)
+- [Configuration](#%EF%B8%8F-configuration)
+- [Usage Guide](#-usage-guide)
+- [Example Workflows](#-example-workflows)
+- [Tech Stack](#%EF%B8%8F-tech-stack)
+- [Platform Compatibility](#-platform-compatibility)
+- [Troubleshooting](#-troubleshooting)
+- [FAQ](#-faq)
+- [Team Members](#-team-members)
+
+---
+
+## 🧠 Architecture
+
+NACC uses a **Hub-and-Spoke** architecture where a central Orchestrator manages multiple distributed Nodes.
+
+```mermaid
+graph TD
+    User[👤 User] -->|Natural Language| UI[💻 NACC Web UI / Claude Desktop]
+    UI -->|JSON-RPC| Orch[🧠 Orchestrator (The Brain)]
+    
+    subgraph Local Network
+        Orch -->|HTTP/MCP| Node1[🖥️ Node 1 (MacBook)]
+        Orch -->|HTTP/MCP| Node2[🐧 Node 2 (Kali VM)]
+        Orch -->|HTTP/MCP| Node3[☁️ Node 3 (Ubuntu Server)]
+    end
+    
+    Node1 -->|Execute| FS1[📂 Filesystem / Shell]
+    Node2 -->|Execute| FS2[📂 Filesystem / Shell]
+    Node3 -->|Execute| FS3[📂 Filesystem / Shell]
 ```
 
-**Performance**: Production-grade fallback parser achieves 75-85% confidence without AI (see [Fallback Parser Enhancement](./docs/FALLBACK-PARSER-ENHANCEMENT.md))
+## 🌟 Key Features
 
-### New Features in Enhanced UI 🎉
+*   **🗣️ Natural Language Control**: "Switch to Kali and scan the network" -> Executed instantly.
+*   **🔌 MCP Native**: Built from scratch on the Model Context Protocol for standardized communication.
+*   **📂 Dynamic File Operations**: Create, read, edit, and delete files across any connected node using natural language.
+*   **🔄 Context-Aware Navigation**: The system remembers which node you're on and your current directory.
+*   **🛡️ Secure & Private**: Designed for **local networks**. Your data stays within your LAN.
+*   **🎨 Professional UI**: Modern, dark-themed interface built with Gradio 6.0.
+*   **⚡ Powered by Blaxel**: Lightning-fast serverless AI inference with zero configuration.
+*   **🤖 Multi-Backend Support**: Works with OpenAI, Anthropic, Gemini, Mistral, Llama, or local LLMs via Ollama.
 
-- ✅ **Real AI Intent Parsing**: Uses Docker Mistral to parse natural language into structured execution plans (no more dumb pattern matching!)
-- ✅ **Intelligent Path Resolution**: Understands "downloads folder" → `/home/user/Downloads` (fixes the "navigating to 'the' folder" disaster)
-- ✅ **Context-Aware Conversations**: Session management with persistent state
-- ✅ **Multi-Tool Orchestration**: Unified tool registry for all NACC operations
-- ✅ **Structured Execution Engine**: Takes AI's plan and executes tools in correct order with validation
-- ✅ **Professional Design**: Manus-style three-pane layout with smooth animations
-- ✅ **Real-Time Context**: Live session info bar showing node, path, and tool usage
-- ✅ **Graceful Fallbacks**: Intelligent heuristics when AI times out (5s timeout)
+---
+
+## ⚡ Why Blaxel Powers NACC
+
+NACC uses **[Blaxel](https://blaxel.com)** as its default AI backend, and for good reason:
+
+### 🚀 Flawless Performance
+*   **Zero Configuration**: Works out of the box - no API keys needed for testing
+*   **Lightning Fast**: Sub-second response times for command execution
+*   **Always Available**: 99.9% uptime serverless infrastructure
+*   **Cost Effective**: Pay only for what you use, perfect for demos and development
+
+### 🎯 Perfect for NACC
+Blaxel's serverless architecture aligns perfectly with NACC's distributed nature:
+*   No cold starts when orchestrating multiple nodes
+*   Handles concurrent requests across nodes seamlessly
+*   Automatically scales with your network growth
+
+### 💡 Acknowledgment
+A huge thank you to the **Blaxel team** for building such a robust platform! Their commitment to making AI accessible and performant has been instrumental in bringing NACC to life. *We'd love to collaborate further - internship opportunities welcome!* 😊
+
+While NACC supports multiple backends (OpenAI, Anthropic, Gemini, Ollama), Blaxel remains our recommended choice for its perfect balance of speed, reliability, and ease of use.
+
+---
+
+## 🔍 How It Works
+
+NACC operates through a sophisticated request flow that bridges natural language and system commands:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as NACC UI
+    participant LLM as AI Backend
+    participant Orch as Orchestrator
+    participant Node as Target Node
+    
+    User->>UI: "Create file test.txt on kali-vm"
+    UI->>Orch: Send query with context
+    Orch->>LLM: Parse intent + context
+    LLM->>Orch: {tool: "write_file", node: "kali-vm", path: "test.txt"}
+    Orch->>Node: HTTP POST /tools/write-file
+    Node->>Node: Execute on filesystem
+    Node->>Orch: {success: true, path: "/home/user/test.txt"}
+    Orch->>UI: Format response
+    UI->>User: "✅ File created on kali-vm"
+```
+
+### Core Components
+
+1.  **UI Layer** (`nacc_ui/`): Gradio-based chat interface with context management
+2.  **Orchestrator** (`nacc_orchestrator/`): Central brain that routes requests and manages node registry
+3.  **Node Agents** (`nacc_node/`): Lightweight servers exposing MCP tools for file/shell operations
+4.  **LLM Backend**: Interprets natural language and selects appropriate tools
+
+---
+
+## 🛠️ Installation & Setup
+
+### Prerequisites
+*   **Python 3.10+** installed on all machines.
+*   **Network**: All machines (Orchestrator and Nodes) must be on the **same local network** (LAN).
+*   **Git**: For cloning the repository.
+
+### Quick Start (For Judges)
+
+```bash
+# Clone the repository
+git clone https://github.com/Vasanthadithya-mundrathi/NACC.git
+cd NACC
+
+# Setup environment (Mac/Linux)
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# Start the Orchestrator
+./start_nacc.sh
+```
+
+Open your browser to `http://localhost:7860` - You're ready!
+
+### Detailed Setup
+
+#### 1. Setting up the Orchestrator (The Brain)
+Run this on your main computer (e.g., MacBook, PC).
+
+1.  **Clone the Repository**
+    ```bash
+    git clone https://github.com/Vasanthadithya-mundrathi/NACC.git
+    cd NACC
+    ```
+
+2.  **Install Dependencies**
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    pip install -r requirements.txt
+    ```
+
+3.  **Make Scripts Executable** (Mac/Linux only)
+    ```bash
+    chmod +x start_nacc.sh
+    ```
+
+4.  **Start the Orchestrator**
+    ```bash
+    ./start_nacc.sh
+    ```
+    
+    The UI will be available at `http://localhost:7860`.
+
+#### 2. Setting up Nodes (The Agents)
+Run this on any other machine you want to control.
+
+> **💡 Recommendation**: We highly recommend installing NACC Nodes in a **Virtual Machine (VM)** (like Kali Linux or Ubuntu) to safely test the powerful command execution capabilities without affecting your main system.
+
+1.  **Install NACC** (Same steps as above: clone & install requirements).
+
+2.  **Start the Node**
+    Run the node agent, specifying a unique name and port:
+    ```bash
+    # On the Node machine (e.g., Kali VM)
+    python3 -m nacc_node.main --name "kali-vm" --host 0.0.0.0 --port 8001
+    ```
+    
+    *Note: `0.0.0.0` allows the node to accept connections from any IP on your local network. Note the IP address of this machine (e.g., `192.168.1.15`).*
+
+---
+
+## ⚙️ Configuration
+
+### API Keys & Backend Selection
+
+NACC supports multiple AI backends. You can configure them via:
+
+1.  **Environment Variables** (Recommended for production):
+    ```bash
+    export OPENAI_API_KEY="sk-..."
+    export ANTHROPIC_API_KEY="sk-ant-..."
+    export GEMINI_API_KEY="..."
+    export BLAXEL_API_KEY="..."
+    ```
+
+2.  **UI Settings**: Use the Settings tab in the NACC Web UI to enter keys and select your backend.
+
+3.  **Config Files**: Edit `configs/orchestrator-config.yml` for advanced configuration.
+
+### Supported Backends
+
+| Backend | Model | Notes |
+|---------|-------|-------|
+| **OpenAI** | GPT-4, GPT-4 Turbo | Best overall performance |
+| **Anthropic** | Claude 3.5 Sonnet | Excellent for complex reasoning |
+| **Google** | Gemini 1.5 Pro | Fast and cost-effective |
+| **Blaxel** | (Serverless) | Pre-configured for quick start |
+| **Ollama** | Llama 3, Mistral | Run locally (requires Docker) |
+
+### Custom Configuration
+
+Edit `configs/orchestrator-config.yml` to:
+*   Add static nodes (nodes that auto-connect on startup)
+*   Configure default timeouts
+*   Set audit log paths
+*   Customize allowed commands per node
+
+Example:
+```yaml
+nodes:
+  - node_id: "macbook-local"
+    transport: "local"
+    root_dir: "/Users/yourname"
+    tags: ["mac", "local"]
+    
+agent_backend:
+  provider: "openai"
+  model: "gpt-4-turbo"
+```
+
+---
+
+## 🚀 Usage Guide
+
+### Connecting a Node
+Once your Orchestrator and Node are running:
+
+1.  Open the NACC UI (`http://localhost:7860`).
+2.  In the Chat interface, type:
+    > "Connect to node at 192.168.1.15 on port 8001 and name it kali-vm"
+3.  The system will register the node. You can verify by asking:
+    > "List all connected nodes"
+
+### Controlling Nodes
+You can now switch contexts and control any node naturally.
+
+**Navigation & Exploration:**
+```
+"Switch to kali-vm"
+"Navigate to Documents folder"
+"List all files in this directory"
+"Go back to parent directory"
+```
+
+**File Operations:**
+```
+"Create a file named 'notes.txt' with content 'Meeting at 5 PM'"
+"Read the content of 'notes.txt'"
+"Delete 'notes.txt'"
+"Write 'Updated content' to existing.txt"
+```
+
+**Cross-Node Actions:**
+```
+"Switch to macbook-local"
+"Share test.txt from kali-vm to macbook-local"
+"Check system stats on all nodes"
+```
+
+### Using with MCP Clients (Claude Desktop)
+
+NACC acts as an MCP Server, meaning you can connect it to Claude Desktop or any MCP-compatible client!
+
+1.  **Configure Claude Desktop**:
+    Add this to your `claude_desktop_config.json` (usually in `~/AppData/Roaming/Claude/` on Windows or `~/Library/Application Support/Claude/` on Mac):
+    ```json
+    {
+      "mcpServers": {
+        "nacc": {
+          "command": "uv",
+          "args": [
+            "--directory",
+            "/absolute/path/to/NACC",
+            "run",
+            "nacc-orchestrator"
+          ]
+        }
+      }
+    }
+    ```
+
+2.  **Alternative (Python Direct)**:
+    ```json
+    {
+      "mcpServers": {
+        "nacc": {
+          "command": "python3",
+          "args": [
+            "-m",
+            "nacc_orchestrator.mcp_server"
+          ],
+          "env": {
+            "PYTHONPATH": "/absolute/path/to/NACC"
+          }
+        }
+      }
+    }
+    ```
+
+3.  **Restart Claude Desktop**. You can now ask Claude:
+    > "List files on my Kali VM"
+    > "Create a backup directory on my Ubuntu server"
+
+---
+
+## 💡 Example Workflows
+
+### Scenario 1: Basic File Operations (Local Node)
+
+**Goal**: Organize your files using AI.
+
+**Prompt**:
+> "Create a directory called 'test_data', write a file named 'notes.txt' inside it with the text 'Hello World', and then read it back to me."
+
+**What Happens**:
+1.  Intent Parser identifies 3 steps (Create Dir, Write File, Read File).
+2.  Orchestrator executes them sequentially on the local node.
+3.  Result: You see the file content "Hello World" in the chat.
+
+### Scenario 2: Network Security Scan (Kali Node)
+
+*Requires a connected Kali Linux node.*
+
+**Goal**: Scan a target IP for vulnerabilities.
+
+**Prompt**:
+> "Switch to the Kali node. Run an nmap scan on 192.168.1.50 to find open ports. If you find port 80, try to curl the homepage."
+
+**What Happens**:
+1.  Router routes the request to the `kali-vm` node.
+2.  Agent executes `nmap -F 192.168.1.50`.
+3.  Logic: If output contains "80/tcp open", the Agent executes `curl http://192.168.1.50`.
+4.  Result: The AI summarizes the open ports and the web page content.
+
+### Scenario 3: Multi-Node Workflow
+
+*Requires multiple connected nodes.*
+
+**Goal**: Distributed task execution.
+
+**Prompt**:
+> "Check the CPU usage on the MacBook node, and if it's below 50%, tell the Cloud node to start the backup process."
+
+**What Happens**:
+1.  Orchestrator queries MacBook node for system stats.
+2.  Orchestrator analyzes the CPU usage.
+3.  If condition is met, sends command `python backup_script.py` to Cloud node.
+4.  Result: A coordinated action across two different physical machines.
+
+---
+
+## 🛠️ Tech Stack
+
+### Core Technologies
+*   **Frontend**: Gradio 6.0 (Python)
+*   **Backend**: FastAPI, Uvicorn
+*   **Protocol**: JSON-RPC 2.0 (MCP Standard)
+*   **AI Models**: OpenAI, Anthropic, Gemini, Mistral, Llama (via Ollama)
+
+### Key Libraries
+*   `pydantic` - Data validation and settings management
+*   `httpx` - Async HTTP client for node communication
+*   `pyyaml` - Configuration file parsing
+*   `rich` - Terminal UI for debugging
+
+### Compatibility
+*   **Primary Support**: macOS, Linux (Debian/Ubuntu/Kali)
+*   **Windows Support**: Recommended via **WSL2**. Native Windows support is experimental.
+
+---
+
+## 🔧 Troubleshooting
+
+### Port Already in Use
+**Error**: `Address already in use: 7860`
+
+**Solution**: The system automatically finds the next open port. Check the terminal output for the correct URL (e.g., `http://127.0.0.1:7861`).
+
+### Node Not Connecting
+**Error**: "Could not connect to node"
+
+**Solutions**:
+1.  Verify the node is running: `ps aux | grep nacc-node`
+2.  Check firewall settings allow port 8001
+3.  Confirm both machines are on the same local network
+4.  Try connecting to the node's IP directly in a browser: `http://192.168.1.15:8001/healthz`
+
+### Permission Denied
+**Error**: `Permission denied: './start_nacc.sh'`
+
+**Solution** (Mac/Linux):
+```bash
+chmod +x start_nacc.sh
+```
+
+### Missing Dependencies
+**Error**: `ModuleNotFoundError: No module named 'gradio'`
+
+**Solution**:
+```bash
+source .venv/bin/activate  # Activate virtual environment
+pip install -r requirements.txt
+```
+
+### API Key Issues
+**Error**: "Invalid API key"
+
+**Solutions**:
+1.  Verify your API key is correctly set in environment variables or UI settings
+2.  Try using the Blaxel backend (pre-configured)
+3.  Switch to local Ollama if you have it running
+
+---
+
+## 💻 Platform Compatibility
+
+### ✅ Fully Supported Platforms
+
+NACC was **built and extensively tested** on the following platforms:
+
+*   **macOS** (Primary development platform)
+*   **Linux** - Debian/Ubuntu/Kali (Tested on Kali Linux VM)
+
+These platforms provide the best experience with full feature support and stability.
+
+### ⚠️ Windows Compatibility Warning
+
+**NACC is NOT recommended for Windows** and may not work properly:
+
+*   **Built on macOS**: The entire system was developed and optimized for Unix-like environments
+*   **Tested on Linux**: All testing and verification was done on macOS and Kali Linux
+*   **Shell Dependencies**: Many core features rely on bash/sh commands that don't translate well to Windows
+*   **Path Handling**: File system operations use Unix path conventions
+
+**If you must use Windows**:
+1.  Use **WSL2 (Windows Subsystem for Linux)** - This is the ONLY supported way
+2.  Native Windows PowerShell/CMD is experimental and will likely fail
+3.  Expect compatibility issues with file operations and shell commands
+
+We strongly recommend using macOS or a Linux VM for the best experience.
+
+---
+
+## ❓ FAQ
+
+**Q: Do I need an API Key to use NACC?**
+
+A: NACC comes configured to use **Blaxel (Serverless)** by default for quick demos. For production, we recommend using your own OpenAI/Anthropic/Gemini key. You can also run **Ollama locally** (Docker required) for completely free, offline operation.
+
+**Q: Is NACC secure?**
+
+A: Yes, NACC is designed for **local network use only**. All communication between the Orchestrator and Nodes happens over your LAN. However, **do not expose Node ports to the public internet** without additional security layers (VPN/SSH Tunnel).
+
+**Q: Can I use NACC in production?**
+
+A: NACC is currently a hackathon project and proof-of-concept. While it's functional, we recommend additional hardening (authentication, encryption, rate limiting) before production use.
+
+**Q: I'm on Windows. Will this work?**
+
+A: Yes! We recommend using **WSL2** for the best experience. If running natively on Windows, some shell commands might need PowerShell equivalents.
+
+**Q: Can I control Windows machines?**
+
+A: Theoretically yes, but NACC is optimized for Unix-like systems (Mac/Linux). Windows support is experimental and may require custom tool configurations.
+
+**Q: How many nodes can I connect?**
+
+A: There's no hard limit, but we recommend starting with 2-5 nodes for optimal performance. The system is designed to scale horizontally.
+
+**Q: Can I use this with my existing automation scripts?**
+
+A: Absolutely! NACC Nodes can execute any script or command available on the target machine. Just use natural language to invoke them.
+
+---
+
+## ⚠️ Important Disclaimer
+
+**Local Network Only**: NACC is designed for local network environments. Nodes are discovered and controlled via direct IP connections. Ensure all your devices are connected to the same Wi-Fi or LAN. 
+
+**Security Note**: Do not expose the Node ports (default 8001) or Orchestrator ports (default 7860) to the public internet without additional security layers (VPN, SSH Tunnel, reverse proxy with authentication).
+
+**VM Recommendation**: For testing, we strongly recommend running Nodes in isolated Virtual Machines to prevent accidental system modifications.
+
+---
+
+## 👥 Team Members
+
+*   [Vasanthadithya-mundrathi](https://huggingface.co/Vasanthfeb13) - Creator & Lead Developer
+
+---
+
+## 🎯 Project Goals
+
+NACC was created for the **Hugging Face MCP Birthday Hackathon 2025** to demonstrate:
+
+1.  **MCP as a Universal Interface**: How the Model Context Protocol can unify disparate systems
+2.  **Natural Language Operations**: Making system administration accessible through conversation
+3.  **Distributed AI Orchestration**: Coordinating multiple agents across network boundaries
+4.  **Practical AI Applications**: Real-world use cases beyond chatbots
+
+---
+
+**Happy Hacking!** 🚀
+
+*Created for the Hugging Face MCP Birthday Hackathon 2025*
+*Built with ❤️ by Vasanthadithya Mundrathi*

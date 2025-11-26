@@ -50,10 +50,10 @@ class NodeDefinition(BaseModel):
 
 
 class AgentBackendConfig(BaseModel):
-    kind: Literal["docker-mistral", "local-heuristic"] = "docker-mistral"
+    kind: Literal["modal", "gemini", "openai", "cerebras", "docker-mistral", "local-heuristic", "blaxel", "blaxel-openai", "blaxel-gemini"] = "modal"
     container_id: str | None = Field(
         default=None,
-        description="Docker container exposing the Mistral-NeMo runtime",
+        description="Docker container, API key, endpoint URL, or runtime identifier",
     )
     command: list[str] | None = Field(
         default=None,

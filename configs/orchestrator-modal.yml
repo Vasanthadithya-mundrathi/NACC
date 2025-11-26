@@ -1,0 +1,60 @@
+# NACC Orchestrator Configuration - Modal Backend (IBM Granite MoE)
+# Modal is the hackathon sponsor providing serverless GPU infrastructure
+# Uses IBM Granite-3.0-3B-A800M-Instruct (3.3B total, 800M active MoE)
+
+orchestrator_id: nacc-orchestrator-modal
+
+# Backend: Modal serverless GPU with IBM Granite MoE
+# For development: Run `modal serve src/nacc_orchestrator/modal_backend.py` first, then leave container_id blank
+# For production: Deploy with `modal deploy src/nacc_orchestrator/modal_backend.py` and set container_id to the web endpoint URL
+agent_backend:
+  kind: modal
+  container_id: null  # Leave blank for development mode (modal serve), or set to web endpoint URL for production
+  timeout: 120.0
+  environment:
+    model: ibm-granite/granite-3.0-3b-a800m-instruct
+    description: "Efficient MoE model with 32 experts, 800M active parameters"
+
+# Multi-node cluster configuration
+nodes:
+  # Local Mac node
+  - node_id: mac
+    display_name: "MacBook (localhost)"
+    transport: local
+    root_dir: /tmp/nacc-local
+    tags:
+      - development
+      - local
+      - macos
+    priority: 50
+    weight: 1.5
+
+  # Remote Kali Linux VM
+  - node_id: kali-vm
+    display_name: "Kali Linux VM"
+    transport: http
+    base_url: http://192.168.64.2:8765
+    auth_token: "nacc-secure-token-2024"
+    tags:
+      - security
+      - linux
+      - remote
+      - pentesting
+    priority: 100
+    weight: 1.0
+    allowed_commands:
+      - nmap
+      - netcat
+      - curl
+      - wget
+      - ssh
+      - python3
+      - bash
+
+# Audit logging
+audit:
+  path: logs/audit-modal.log
+  max_entries: 100000
+
+# Node health check interval
+refresh_interval: 10.0

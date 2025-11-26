@@ -1,0 +1,61 @@
+agent_backend:
+  container_id: null
+  environment:
+    description: Modal serverless GPU with IBM Granite MoE (3.3B/800M active)
+    modal_app_id: ap-8PaCvfA0O7brdDuCMSuNRV
+    model: ibm-granite/granite-3.0-3b-a800m-instruct
+  kind: modal
+  timeout: 120.0
+audit:
+  max_entries: 50000
+  path: logs/audit.log
+nodes:
+- display_name: MacBook Pro (Local)
+  node_id: macbook-local
+  priority: 50
+  root_dir: /Users/vasanthadithya/nacc-workspace
+  tags:
+  - development
+  - local
+  - macos
+  transport: local
+  weight: 1.5
+- allowed_commands:
+  - ls
+  - cat
+  - pwd
+  - echo
+  - mkdir
+  - touch
+  - nmap
+  - netcat
+  - curl
+  - wget
+  - ssh
+  - python3
+  - bash
+  - nc
+  - ping
+  auth_token: nacc-secure-token-2024
+  base_url: http://192.168.64.2:8765
+  display_name: Kali Linux VM
+  node_id: kali-vm
+  priority: 100
+  tags:
+  - security
+  - linux
+  - remote
+  - pentesting
+  transport: http
+  weight: 1.0
+- base_url: !!python/object:pydantic.networks.HttpUrl
+    _url: !!python/object/new:pydantic_core._pydantic_core.Url
+    - http://127.0.0.1:8765/
+  display_name: Node-697444
+  id: ff8ee336-a8f4-476a-8507-e8ab0df92d49
+  tags:
+  - dynamic
+  - unknown
+  transport: http
+orchestrator_id: nacc-orchestrator
+refresh_interval: 10.0

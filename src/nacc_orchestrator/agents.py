@@ -85,6 +85,36 @@ def build_backend(config: AgentBackendConfig) -> LLMBackend:
             timeout=config.timeout,
             environment=config.environment,
         )
+    elif config.kind == "cerebras":
+        # Import here to avoid dependency if not using Cerebras
+        from .cerebras_backend import CerebrasBackend
+        api_key = config.container_id or os.environ.get("CEREBRAS_API_KEY")
+        model = config.environment.get("model", "zai-glm-4.6") if config.environment else "zai-glm-4.6"
+        return CerebrasBackend(api_key=api_key, model=model)
+    elif config.kind == "blaxel" or config.kind == "blaxel-openai" or config.kind == "blaxel-gemini":
+        # Import here to avoid dependency if not using Blaxel
+        from .blaxel_backend import BlaxelBackend
+        api_key = config.container_id or os.environ.get("BLAXEL_API_KEY")
+        workspace = config.environment.get("workspace") if config.environment else os.environ.get("BLAXEL_WORKSPACE")
+        model = config.environment.get("model", "gpt-4o-mini") if config.environment else "gpt-4o-mini"
+        
+        # Determine endpoint type from config kind
+        endpoint_type = "openai"
+        if config.kind == "blaxel-gemini":
+            endpoint_type = "gemini"
+            model = config.environment.get("model", "gemini-2-0-flash-exp") if config.environment else "gemini-2-0-flash-exp"
+        
+        return BlaxelBackend(
+            api_key=api_key,
+            workspace=workspace,
+            model=model,
+            endpoint_type=endpoint_type
+        )
+    elif config.kind == "modal":
+        # Import here to avoid dependency if not using Modal
+        from .modal_backend import ModalBackend
+        endpoint_url = config.container_id  # Use container_id field for endpoint URL
+        return ModalBackend(endpoint_url=endpoint_url)
     return LocalHeuristicBackend()
 
 

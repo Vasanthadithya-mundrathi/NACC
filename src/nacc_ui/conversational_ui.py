@@ -26,6 +26,33 @@ ORCHESTRATOR_URL = os.getenv("NACC_ORCHESTRATOR_URL", "http://127.0.0.1:8888")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+def get_nacc_workspace() -> str:
+    """Get or create NACC workspace directory dynamically"""
+    # Try to use user's home directory
+    home = Path.home()
+    nacc_workspace = home / "nacc-workspace"
+    
+    # Create if doesn't exist
+    nacc_workspace.mkdir(exist_ok=True)
+    
+    # Create a README in the workspace
+    readme = nacc_workspace / "README.md"
+    if not readme.exists():
+        readme.write_text("""# NACC Workspace
+
+This directory is used by NACC (Network Agentic Connection Call) for:
+- AI file operations (read/write files)
+- Command execution context
+- Node management operations
+
+You can safely store files here that you want NACC to access.
+
+Created: """ + datetime.now().isoformat())
+    
+    return str(nacc_workspace)
+
+
 class SessionState:
     """Manages conversation session state and context"""
     def __init__(self, session_id: str):
@@ -33,8 +60,8 @@ class SessionState:
         self.conversation_history: List[Dict[str, Any]] = []
         self.tool_execution_log: List[Dict[str, Any]] = []
         self.context_window_size = 10  # Last N messages for AI context
-        self.current_node = "kali-vm"
-        self.current_path = "/home/vasanth"
+        self.current_node = "macbook-local"  # Default to local Mac
+        self.current_path = get_nacc_workspace()  # Dynamic workspace
         self.created_at = datetime.now()
         
     def add_message(self, role: str, content: str, metadata: Optional[Dict] = None):

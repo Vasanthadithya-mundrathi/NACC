@@ -1,0 +1,12 @@
+allowed_commands:
+- python
+- ls
+- cat
+- echo
+- grep
+display_name: Node-cc5eb359
+node_id: cc5eb359-fcbe-497c-9160-51cc742ccc46
+root_dir: /Users/vasanthadithya/Documents/Projects/MCP birthday hackathon
+sync_targets: {}
+tags:
+- generic

@@ -53,6 +53,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Message to send to the agent backend during the probe",
     )
 
+    register_parser = subparsers.add_parser("register-node", help="Register a new node using a pairing code")
+    register_parser.add_argument("code", help="The 6-digit pairing code from the node")
+    register_parser.add_argument("--ip", required=True, help="The IP address of the node")
+    register_parser.add_argument("--config", default="orchestrator-config.yml", help="Config file to update")
+
     return parser
 
 
@@ -98,6 +103,71 @@ def main(argv: list[str] | None = None) -> None:
         service = _load_service(args.config)
         response = service.check_agent_backend(args.message)
         print(json.dumps(response, indent=2))
+        return
+
+    if args.command == "register-node":
+        from .config import NodeDefinition
+        
+        # In a real implementation, this would verify the code against a central registry or broadcast
+        # For this hackathon version, we trust the user provided the code and IP
+        
+        pairing_code = args.code
+        node_ip = args.ip
+        
+        if not node_ip:
+            print("Error: --ip is required for registration in this version.")
+            return
+
+        print(f"Registering node with code {pairing_code} at {node_ip}...")
+        
+        # Create a new node definition
+        # We use the code as part of the ID for now, or fetch from the node if we could talk to it
+        import uuid
+        node_id = str(uuid.uuid4())
+        
+        new_node = NodeDefinition(
+            node_id=node_id,
+            transport="http",
+            base_url=f"http://{node_ip}:8765",
+            display_name=f"Node-{pairing_code}",
+            tags=["dynamic", "linux" if "192" in node_ip else "unknown"],
+            priority=10
+        )
+        
+        # Load service to get current config
+        service = _load_service(args.config)
+        
+        # Add to registry (in-memory only for this runtime)
+        service.registry.add_node(new_node)
+        
+        # Persist to config file
+        import yaml
+        from pathlib import Path
+        
+        config_path = Path(args.config)
+        if config_path.exists():
+            with open(config_path, "r") as f:
+                config_data = yaml.safe_load(f) or {}
+            
+            nodes = config_data.get("nodes", [])
+            nodes.append({
+                "id": new_node.node_id,
+                "transport": "http",
+                "base_url": new_node.base_url,
+                "display_name": new_node.display_name,
+                "tags": new_node.tags
+            })
+            config_data["nodes"] = nodes
+            
+            with open(config_path, "w") as f:
+                yaml.dump(config_data, f)
+            
+            print(f"✅ Node registered and saved to {config_path}")
+            print(f"   ID: {new_node.node_id}")
+            print(f"   URL: {new_node.base_url}")
+        else:
+            print("Error: Config file not found, cannot persist node.")
+            
         return
 
     if args.command in (None, "serve"):

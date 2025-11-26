@@ -35,6 +35,8 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Validate configuration and exit without starting the server",
     )
 
+    init_parser = subparsers.add_parser("init", help="Initialize a new node and generate pairing code")
+
     list_parser = subparsers.add_parser("list-files", help="List files on this node")
     list_parser.add_argument("--path", default=".", help="Path to inspect")
     list_parser.add_argument(
@@ -87,6 +89,47 @@ def main(argv: list[str] | None = None) -> None:
         )
         payload = {"files": [file.to_dict() for file in files], "count": len(files)}
         print(json.dumps(payload, indent=2))
+        return
+
+    if args.command == "init":
+        import uuid
+        from .pairing import create_session
+        
+        # Generate defaults
+        node_id = str(uuid.uuid4())
+        root_dir = Path.cwd().resolve()
+        
+        # Create config structure
+        config_data = {
+            "node_id": node_id,
+            "root_dir": str(root_dir),
+            "display_name": f"Node-{node_id[:8]}",
+            "tags": ["generic"],
+            "allowed_commands": ["python", "ls", "cat", "echo", "grep"],
+            "sync_targets": {}
+        }
+        
+        # Generate pairing code
+        session = create_session(node_id)
+        
+        # Save config
+        output_path = Path("node-config.yml")
+        if output_path.exists():
+            print(f"Config file {output_path} already exists. Skipping creation.")
+        else:
+            import yaml
+            with open(output_path, "w") as f:
+                yaml.dump(config_data, f)
+            print(f"Created {output_path}")
+
+        print("\n" + "="*40)
+        print(f"🚀 Node Initialized: {config_data['display_name']}")
+        print(f"🆔 Node ID: {node_id}")
+        print(f"🔑 PAIRING CODE: {session.code}")
+        print("="*40)
+        print("\nRun this on your orchestrator to pair:")
+        print(f"  nacc-orchestrator register-node {session.code} --ip <THIS_NODE_IP>")
+        print("\n(Note: The code is for display only in this version. Use the ID/IP for manual registration if needed.)")
         return
 
     if args.command in (None, "serve"):

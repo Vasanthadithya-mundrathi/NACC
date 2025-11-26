@@ -1,0 +1,5 @@
+# UI configuration for Modal backend
+orchestrator_url: http://127.0.0.1:8888
+host: 0.0.0.0
+port: 7860
+refresh_interval: 5
