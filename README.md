@@ -1,17 +1,18 @@
 ---
 tags:
-- mcp-server-track
+- mcp-in-action-track-enterprise
+- mcp-in-action-track-consumer
+- mcp-in-action-track-creative
 - building-mcp-track-enterprise
 - building-mcp-track-consumer
 - building-mcp-track-creative
-- mcp-in-action
 ---
 
 # 🚀 NACC Orchestrator: Network Agentic Command Control
 
 > **Turn your entire network into a single, intelligent entity.**
 
-NACC is a **Multi-Node AI Orchestrator** built on the **Model Context Protocol (MCP)**. It allows you to seamlessly control multiple computers (Mac, Linux, VMs) using natural language from a single interface. Whether you are managing a home lab, a fleet of servers, or just your laptop and a VM, NACC unifies them into one cohesive system.
+NACC is an **Autonomous AI Agent Application** that orchestrates multiple computers as a unified intelligent system using the **Model Context Protocol (MCP)**. It showcases autonomous reasoning, planning, and execution across distributed nodes—controlling Mac, Linux, and VM environments through natural language. Whether managing enterprise infrastructure, home labs, or creative workflows, NACC demonstrates the true power of MCP-enabled AI agents.
 
 ---
 
@@ -20,14 +21,28 @@ NACC is a **Multi-Node AI Orchestrator** built on the **Model Context Protocol (
 
 ---
 
-## 🏆 Hackathon Categories
+## 🏆 Hackathon Tracks
 
-NACC qualifies for **multiple tracks** in the MCP Birthday Hackathon:
+### 🎯 Primary: Track 2 - MCP in Action
 
-*   **🏢 Enterprise**: Multi-node orchestration for distributed systems and infrastructure management
-*   **� Consumer**: User-friendly natural language interface for home labs and personal workflows
-*   **🎨 Creative**: Innovative hub-and-spoke architecture enabling unprecedented cross-machine AI coordination
-*   **🎯 MCP in Action**: Practical demonstration of MCP's power in real-world scenarios
+NACC is a **complete AI agent application** that demonstrates autonomous reasoning, planning, and execution:
+
+*   **🏢 Enterprise Applications** (`mcp-in-action-track-enterprise`): Multi-node orchestration for distributed infrastructure management, automated deployments, and coordinated system administration
+*   **👤 Consumer Applications** (`mcp-in-action-track-consumer`): User-friendly natural language interface for home labs, personal workflows, and everyday task automation
+*   **🎨 Creative Applications** (`mcp-in-action-track-creative`): Innovative hub-and-spoke architecture enabling unprecedented cross-machine AI coordination and distributed creative workflows
+
+**What makes NACC an AI Agent Application:**
+- **Autonomous Reasoning**: AI interprets complex multi-step requests and plans execution across nodes
+- **Dynamic Planning**: Intelligently routes commands based on node capabilities and current context
+- **Autonomous Execution**: Executes coordinated actions across multiple machines without manual intervention
+
+### 🔧 Secondary: Track 1 - Building MCP
+
+NACC also functions as an **MCP Server** extending LLM capabilities:
+
+*   Exposes powerful tools for distributed file operations, shell execution, and cross-node synchronization
+*   Integrates with Claude Desktop and any MCP-compatible client
+*   Built entirely on MCP protocol for standardized AI-to-system communication
 
 This project was built **from the ground up** using the Model Context Protocol, showcasing true innovation in distributed AI orchestration.
 
