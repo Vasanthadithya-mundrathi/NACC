@@ -58,18 +58,18 @@ NACC uses a **Hub-and-Spoke** architecture where a central Orchestrator manages 
 
 ```mermaid
 graph TD
-    User[👤 User] -->|Natural Language| UI[💻 NACC Web UI / Claude Desktop]
-    UI -->|JSON-RPC| Orch[🧠 Orchestrator (The Brain)]
+    User["👤 User"] -->|Natural Language| UI["💻 NACC Web UI / Claude Desktop"]
+    UI -->|JSON-RPC| Orch["🧠 Orchestrator - The Brain"]
     
     subgraph Local Network
-        Orch -->|HTTP/MCP| Node1[🖥️ Node 1 (MacBook)]
-        Orch -->|HTTP/MCP| Node2[🐧 Node 2 (Kali VM)]
-        Orch -->|HTTP/MCP| Node3[☁️ Node 3 (Ubuntu Server)]
+        Orch -->|HTTP/MCP| Node1["🖥️ Node 1 - MacBook"]
+        Orch -->|HTTP/MCP| Node2["🐧 Node 2 - Kali VM"]
+        Orch -->|HTTP/MCP| Node3["☁️ Node 3 - Ubuntu Server"]
     end
     
-    Node1 -->|Execute| FS1[📂 Filesystem / Shell]
-    Node2 -->|Execute| FS2[📂 Filesystem / Shell]
-    Node3 -->|Execute| FS3[📂 Filesystem / Shell]
+    Node1 -->|Execute| FS1["📂 Filesystem / Shell"]
+    Node2 -->|Execute| FS2["📂 Filesystem / Shell"]
+    Node3 -->|Execute| FS3["📂 Filesystem / Shell"]
 ```
 
 ## 🌟 Key Features
