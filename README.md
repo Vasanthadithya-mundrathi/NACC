@@ -27,8 +27,8 @@ NACC is an **Autonomous AI Agent Application** that orchestrates multiple comput
 
 ---
 
-### 🎥 [Watch the Video Demo](LINK_TO_YOUR_VIDEO_HERE)
-### 🐦 [See it on X / LinkedIn](LINK_TO_YOUR_SOCIAL_POST_HERE)
+
+### 🐦 [See it on X / LinkedIn]https://www.linkedin.com/posts/vasanthadithya-mundrathi-84a54031a_mcp-modelcontextprotocol-mcpbirthday-activity-7400561851106897920-0i1u?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFDhpLoBNcrQ4qiK_sGt54NWi9Zd-0VanIM
 
 ---
 
